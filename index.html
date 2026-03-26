@@ -659,6 +659,33 @@
     .payment-panel.active {
       display: block;
     }
+    .manual-payment-box {
+      display: grid;
+      gap: .85rem;
+      margin-top: 1rem;
+      padding: 1.1rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.09);
+      background: rgba(255,255,255,.03);
+    }
+    .manual-payment-box h4 {
+      margin: 0;
+      font-size: 1rem;
+      color: #fff3df;
+    }
+    .manual-payment-box p,
+    .manual-payment-box small {
+      margin: 0;
+      color: rgba(255,255,255,.68);
+      line-height: 1.6;
+    }
+    .manual-payment-feedback {
+      min-height: 1.25rem;
+      font-size: .9rem;
+      color: rgba(255,255,255,.72);
+    }
+    .manual-payment-feedback.success { color: #9fe0a7; }
+    .manual-payment-feedback.error { color: #ffb3b3; }
     .qr-placeholder {
       display: grid;
       place-items: center;
@@ -978,6 +1005,14 @@
               <a href="#" class="btn-main payment-link is-disabled" id="cardPaymentLink" aria-disabled="true">Link de pagamento em configuracao</a>
               <p class="muted-note">Quando voce me enviar o link do cartao, eu deixo este botao ativo e apontando para o checkout real.</p>
             </div>
+
+            <div class="manual-payment-box">
+              <h4>Depois de pagar, avise a equipe</h4>
+              <p>Finalize no Pix ou no cartao e depois clique abaixo para mandar seu pedido para conferencia manual.</p>
+              <button type="button" class="btn-main" id="confirmManualPayment">Ja fiz o pagamento</button>
+              <div class="manual-payment-feedback" id="manualPaymentFeedback"></div>
+              <small>O aviso envia por e-mail seu nome, contato, endereco, produto, quantidade e forma de pagamento.</small>
+            </div>
           </section>
         </div>
 
@@ -1082,13 +1117,23 @@
     const summaryShipping = document.getElementById('summaryShipping');
     const summaryTotal = document.getElementById('summaryTotal');
     const shippingHelper = document.getElementById('shippingHelper');
+    const buyerName = document.getElementById('buyerName');
+    const buyerEmail = document.getElementById('buyerEmail');
+    const buyerPhone = document.getElementById('buyerPhone');
     const buyerCep = document.getElementById('buyerCep');
+    const buyerStreet = document.getElementById('buyerStreet');
+    const buyerNumber = document.getElementById('buyerNumber');
+    const buyerDistrict = document.getElementById('buyerDistrict');
     const buyerCity = document.getElementById('buyerCity');
     const buyerState = document.getElementById('buyerState');
+    const buyerComplement = document.getElementById('buyerComplement');
+    const shippingNotes = document.getElementById('shippingNotes');
     const pixCode = document.getElementById('pixCode');
     const copyPixCode = document.getElementById('copyPixCode');
     const panelPix = document.getElementById('panelPix');
     const panelCard = document.getElementById('panelCard');
+    const confirmManualPayment = document.getElementById('confirmManualPayment');
+    const manualPaymentFeedback = document.getElementById('manualPaymentFeedback');
 
     let selectedProduct = 'Leque Flacalcinha';
     let selectedPayment = 'pix';
@@ -1214,6 +1259,89 @@
         }, 1800);
       } catch (error) {
           copyPixCode.textContent = 'Nao foi possivel copiar';
+      }
+    });
+
+    function buildManualPaymentPayload() {
+      const quantity = Math.max(1, Math.min(50, Number(quantitySelect.value || 1)));
+      const subtotal = quantity * unitPrice;
+
+      return {
+        customer: {
+          name: buyerName.value.trim(),
+          email: buyerEmail.value.trim(),
+          phone: buyerPhone.value.trim()
+        },
+        address: {
+          cep: buyerCep.value.trim(),
+          street: buyerStreet.value.trim(),
+          number: buyerNumber.value.trim(),
+          district: buyerDistrict.value.trim(),
+          city: buyerCity.value.trim(),
+          state: buyerState.value.trim().toUpperCase(),
+          complement: buyerComplement.value.trim(),
+          notes: shippingNotes.value.trim()
+        },
+        order: {
+          productName: selectedProduct,
+          quantity,
+          unitPrice: unitPrice,
+          subtotal,
+          shippingLabel: summaryShipping.textContent.trim(),
+          totalLabel: summaryTotal.textContent.trim(),
+          paymentMethod: selectedPayment === 'card' ? 'Cartao de credito' : 'Pix'
+        }
+      };
+    }
+
+    function validateManualPaymentPayload(payload) {
+      if (!payload.customer.name || !payload.customer.email || !payload.customer.phone) {
+        return 'Preencha nome, email e numero antes de avisar o pagamento.';
+      }
+
+      if (!payload.address.cep || !payload.address.street || !payload.address.number || !payload.address.city || !payload.address.state) {
+        return 'Preencha os dados principais do endereco antes de enviar o aviso.';
+      }
+
+      return '';
+    }
+
+    confirmManualPayment.addEventListener('click', async () => {
+      const payload = buildManualPaymentPayload();
+      const validationError = validateManualPaymentPayload(payload);
+
+      if (validationError) {
+        manualPaymentFeedback.textContent = validationError;
+        manualPaymentFeedback.className = 'manual-payment-feedback error';
+        return;
+      }
+
+      confirmManualPayment.disabled = true;
+      confirmManualPayment.textContent = 'Enviando aviso...';
+      manualPaymentFeedback.textContent = '';
+      manualPaymentFeedback.className = 'manual-payment-feedback';
+
+      try {
+        const response = await fetch('/api/manual-payment-notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Nao foi possivel registrar o aviso.');
+        }
+
+        manualPaymentFeedback.textContent = 'Aviso enviado. Agora a equipe vai conferir o pagamento e seguir com o pedido.';
+        manualPaymentFeedback.className = 'manual-payment-feedback success';
+      } catch (error) {
+        manualPaymentFeedback.textContent = error.message || 'Falha ao enviar aviso de pagamento.';
+        manualPaymentFeedback.className = 'manual-payment-feedback error';
+      } finally {
+        confirmManualPayment.disabled = false;
+        confirmManualPayment.textContent = 'Ja fiz o pagamento';
       }
     });
 
