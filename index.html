@@ -624,6 +624,10 @@
       border-top: 1px solid rgba(255,255,255,.08);
       font-size: 1.08rem;
     }
+    .summary-mobile-cta {
+      display: block;
+      margin-top: 1rem;
+    }
     .summary-note,
     .muted-note {
       color: rgba(250,250,250,.48);
@@ -749,6 +753,7 @@
       .fan-wrap { width: 380px; }
       .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .field-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .summary-mobile-cta { display: none; }
     }
     @media (min-width: 1024px) {
       .hero {
@@ -1053,6 +1058,11 @@
             <strong id="summaryTotal">R$ 45,00 + frete</strong>
           </div>
 
+          <button type="button" class="btn-main summary-mobile-cta" id="continueToAddressMobile">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            Continuar para endereco
+          </button>
+
           <p class="summary-note" id="shippingHelper">Informe o endereco para fechar o valor do frete e confirmar o pagamento.</p>
         </aside>
       </div>
@@ -1116,6 +1126,7 @@
     const leadEmailInput = document.getElementById('email');
     const leadPhoneInput = document.getElementById('whats');
     const continueToAddress = document.getElementById('continueToAddress');
+    const continueToAddressMobile = document.getElementById('continueToAddressMobile');
     const continueToPayment = document.getElementById('continueToPayment');
     const checkoutSection = document.getElementById('checkout');
     const stepAddress = document.getElementById('stepAddress');
@@ -1233,10 +1244,13 @@
       }
     });
 
-    continueToAddress.addEventListener('click', () => {
+    function openAddressStep() {
       stepAddress.classList.remove('hidden-step');
       scrollToSection(stepAddress);
-    });
+    }
+
+    continueToAddress.addEventListener('click', openAddressStep);
+    continueToAddressMobile.addEventListener('click', openAddressStep);
 
     continueToPayment.addEventListener('click', () => {
       stepPayment.classList.remove('hidden-step');
