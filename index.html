@@ -141,11 +141,15 @@
       font-weight: 900;
       line-height: .9;
       letter-spacing: -.01em;
+      display: inline-flex;
+      align-items: baseline;
+      gap: .08em;
+      flex-wrap: nowrap;
       opacity: 0;
       animation: fadeUp .7s .4s forwards;
     }
-    .brand-name .fla  { display: block; color: var(--red); }
-    .brand-name .cal  { display: block; color: var(--white); }
+    .brand-name .fla  { display: inline; color: var(--red); }
+    .brand-name .cal  { display: inline; color: var(--white); }
 
     .divider {
       width: 50px; height: 2px;
