@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fla Calcinha – Leque Flacalcinha</title>
-  <meta name="description" content="O leque mais estiloso da maior torcida do Brasil. Pré-venda exclusiva do Leque Flacalcinha." />
+  <title>Fla Calcinha â€“ Leque Flacalcinha</title>
+  <meta name="description" content="O leque mais estiloso da maior torcida do Brasil. PrÃ©-venda exclusiva do Leque Flacalcinha." />
   <link rel="icon" type="image/png" href="leques/favicon-transparent.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,7 +32,7 @@
       overflow-x: hidden;
     }
 
-    /* ── NOISE OVERLAY ── */
+    /* â”€â”€ NOISE OVERLAY â”€â”€ */
     body::before {
       content: '';
       position: fixed; inset: 0;
@@ -42,7 +42,7 @@
       z-index: 9999;
     }
 
-    /* ── HEADER ── */
+    /* â”€â”€ HEADER â”€â”€ */
     header {
       position: fixed; top: 0; left: 0; right: 0;
       z-index: 100;
@@ -78,7 +78,7 @@
       border-radius: 20px;
     }
 
-    /* ── HERO ── */
+    /* â”€â”€ HERO â”€â”€ */
     .hero {
       min-height: 100svh;
       display: grid;
@@ -109,7 +109,7 @@
       );
     }
 
-    /* ── FAN MOSAIC ── */
+    /* â”€â”€ FAN MOSAIC â”€â”€ */
     .mosaic {
       position: absolute; inset: 0;
       display: grid;
@@ -124,7 +124,7 @@
     .mosaic-cell:nth-child(odd)  { background: rgba(204,0,0,.15); }
     .mosaic-cell:nth-child(3n)   { background: rgba(255,255,255,.04); }
 
-    /* ── HERO CONTENT ── */
+    /* â”€â”€ HERO CONTENT â”€â”€ */
     .hero-content {
       position: relative; z-index: 2;
       display: flex; flex-direction: column; align-items: center;
@@ -169,7 +169,7 @@
       animation: fadeUp .7s .55s forwards;
     }
 
-    /* ── FAN SVG ILLUSTRATION ── */
+    /* â”€â”€ FAN SVG ILLUSTRATION â”€â”€ */
     .fan-wrap {
       position: relative;
       width: min(320px, 88vw);
@@ -226,7 +226,7 @@
       animation: fadeUp .8s 1s forwards;
     }
 
-    /* ── PRODUCT BADGES ── */
+    /* â”€â”€ PRODUCT BADGES â”€â”€ */
     .badges {
       display: flex; flex-wrap: wrap; gap: .6rem;
       justify-content: center;
@@ -248,7 +248,7 @@
     }
     .badge.red { border-color: rgba(204,0,0,.5); color: var(--red); background: rgba(204,0,0,.08); }
 
-    /* ── CTA BLOCK ── */
+    /* â”€â”€ CTA BLOCK â”€â”€ */
     .cta-block {
       display: flex; flex-direction: column; align-items: center;
       gap: 1rem;
@@ -294,7 +294,7 @@
     }
     .btn-secondary:hover { color: var(--white); }
 
-    /* ── URGENCY BAR ── */
+    /* â”€â”€ URGENCY BAR â”€â”€ */
     .urgency {
       position: relative; z-index: 2;
       display: flex; align-items: center; justify-content: center; gap: .6rem;
@@ -308,7 +308,7 @@
     .urgency-dot { width: 8px; height: 8px; background: var(--white); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
     @keyframes pulse { 0%,100% { opacity:1; transform: scale(1); } 50% { opacity:.4; transform: scale(.6); } }
 
-    /* ── MODAL ── */
+    /* â”€â”€ MODAL â”€â”€ */
     .modal-overlay {
       position: fixed; inset: 0; z-index: 200;
       background: rgba(0,0,0,.85);
@@ -445,7 +445,7 @@
 
     .modal-fine { font-size: .68rem; color: rgba(255,255,255,.3); text-align: center; margin-top: 1rem; }
 
-    /* ── SUCCESS ── */
+    /* â”€â”€ SUCCESS â”€â”€ */
     .success-msg { text-align: center; display: none; }
     .success-msg .check {
       width: 60px; height: 60px;
@@ -729,7 +729,7 @@
       pointer-events: none;
     }
 
-    /* ── FOOTER ── */
+    /* â”€â”€ FOOTER â”€â”€ */
     footer {
       position: relative; z-index: 2;
       text-align: center;
@@ -741,13 +741,13 @@
     }
     footer strong { color: rgba(255,255,255,.4); }
 
-    /* ── ANIMATIONS ── */
+    /* â”€â”€ ANIMATIONS â”€â”€ */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(22px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── DESKTOP ── */
+    /* â”€â”€ DESKTOP â”€â”€ */
     @media (min-width: 768px) {
       .hero-content { padding: 6rem 2rem 3rem; gap: 0; }
       .fan-wrap { width: 380px; }
@@ -790,8 +790,8 @@
 
   <!-- HEADER -->
   <header>
-    <div class="logo"><span>Vrá</span><span>Vrá</span><span>Vrá</span><span>Vrá</span></div>
-    <div class="header-badge">Pré-venda</div>
+    <div class="logo"><span>VrÃ¡</span><span>VrÃ¡</span><span>VrÃ¡</span><span>VrÃ¡</span></div>
+    <div class="header-badge">PrÃ©-venda</div>
   </header>
 
   <!-- HERO -->
@@ -827,7 +827,7 @@
 
       <!-- LEFT / COPY -->
       <div class="left-col">
-        <p class="eyebrow">✦ Edição limitada · Pré-venda exclusiva</p>
+        <p class="eyebrow">âœ¦ EdiÃ§Ã£o limitada Â· PrÃ©-venda exclusiva</p>
 
         <h1 class="brand-name">
           <span class="fla">Fla</span>
@@ -837,17 +837,17 @@
         <div class="divider"></div>
 
         <h2 class="headline">
-          O leque que só quem <em>realmente ama</em> vai ter.
+          Nossa torcida, nossa cara, nosso <em>leque</em>.
         </h2>
 
         <p class="subline">
-          Elegância, atitude e as cores que correm no sangue. O Leque Flacalcinha é para a torcedora que vai ao jogo de cabeça erguida — e sai com o coração em chamas.
+          Feito por mulheres flamenguistas, do nosso jeito.
         </p>
 
         <div class="badges">
-          <span class="badge red">Edição Limitada</span>
+          <span class="badge red">EdiÃ§Ã£o Limitada</span>
           <span class="badge">Artesanal</span>
-          <span class="badge">Colecionável</span>
+          <span class="badge">ColecionÃ¡vel</span>
           <span class="badge">100% Atitude</span>
         </div>
 
@@ -856,7 +856,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             Garantir meu Leque
           </a>
-          <button class="btn-secondary" id="openModalSub">Avise-me quando lançar</button>
+          <button class="btn-secondary" id="openModalSub">Avise-me quando lanÃ§ar</button>
         </div>
       </div>
 
@@ -872,7 +872,7 @@
     <!-- URGENCY BAR -->
     <div class="urgency">
       <div class="urgency-dot"></div>
-      Vagas limitadas · Pré-venda encerrando em breve
+      Vagas limitadas Â· PrÃ©-venda encerrando em breve
       <div class="urgency-dot"></div>
     </div>
 
@@ -1071,13 +1071,13 @@
 
   <!-- FOOTER -->
   <footer>
-    <strong>FlaCalcinha</strong> &nbsp;·&nbsp; Produto independente, sem vínculo com qualquer entidade desportiva oficial &nbsp;·&nbsp; © 2025
+    <strong>FlaCalcinha</strong> &nbsp;Â·&nbsp; Produto independente, sem vÃ­nculo com qualquer entidade desportiva oficial &nbsp;Â·&nbsp; Â© 2025
   </footer>
 
   <!-- MODAL -->
   <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-label="Entrar na fila de espera">
     <div class="modal">
-      <button class="modal-close" id="closeModal" aria-label="Fechar">×</button>
+      <button class="modal-close" id="closeModal" aria-label="Fechar">Ã—</button>
 
       <div id="formContent">
         <h2>Entre na <span>fila de espera</span></h2>
@@ -1101,7 +1101,7 @@
       </div>
 
       <div class="success-msg" id="successMsg">
-        <div class="check">🔥</div>
+        <div class="check">ðŸ”¥</div>
         <h3>Voce entrou na fila</h3>
         <p>Seu lugar esta guardado. Assim que a proxima leva chegar, voce sera avisada primeiro.</p>
       </div>
