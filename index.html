@@ -504,6 +504,16 @@
       box-shadow: 0 0 0 1px rgba(204,0,0,.18), 0 18px 45px rgba(204,0,0,.14);
       background: linear-gradient(180deg, rgba(204,0,0,.08), rgba(255,255,255,.02));
     }
+    .product-image {
+      width: 100%;
+      aspect-ratio: 4 / 5;
+      object-fit: cover;
+      border-radius: 14px;
+      display: block;
+      margin-bottom: 1rem;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+    }
     .product-title-row {
       display: flex;
       justify-content: space-between;
@@ -795,6 +805,7 @@
 
             <div class="product-grid">
               <button type="button" class="product-card active" data-product="Leque Flacalcinha">
+                <img class="product-image" src="leques/lequeflacalcinha.jpeg" alt="Leque Flacalcinha" />
                 <div class="product-title-row">
                   <span class="product-name">Leque Flacalcinha</span>
                   <span class="product-price">R$ 45,00</span>
@@ -803,6 +814,7 @@
               </button>
 
               <button type="button" class="product-card" data-product="Leque Flamengo">
+                <img class="product-image" src="leques/lequeflamengo.jpeg" alt="Leque Flamengo" />
                 <div class="product-title-row">
                   <span class="product-name">Leque Flamengo</span>
                   <span class="product-price">R$ 45,00</span>
