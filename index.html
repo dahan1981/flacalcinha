@@ -373,6 +373,52 @@
     .form-group textarea:focus { border-color: var(--red); }
     .form-group textarea::placeholder { color: rgba(255,255,255,.25); }
     .form-group textarea { min-height: 112px; resize: vertical; }
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .7rem;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.04);
+      max-width: 260px;
+    }
+    .quantity-btn {
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(204,0,0,.14);
+      color: var(--white);
+      font-size: 1.4rem;
+      cursor: pointer;
+      transition: background .2s, transform .2s;
+    }
+    .quantity-btn:hover {
+      background: rgba(204,0,0,.28);
+      transform: translateY(-1px);
+    }
+    .quantity-input {
+      width: 84px;
+      text-align: center;
+      background: transparent !important;
+      border: none !important;
+      font-size: 1.05rem !important;
+      font-weight: 700;
+      padding: 0 !important;
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+    .quantity-input::-webkit-outer-spin-button,
+    .quantity-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .quantity-hint {
+      font-size: .82rem;
+      color: rgba(250,250,250,.5);
+      margin-top: .55rem;
+    }
 
     .btn-form {
       width: 100%;
@@ -826,58 +872,12 @@
 
             <div class="form-group">
               <label for="quantity">Quantidade</label>
-              <select id="quantity" aria-label="Quantidade">
-                <option value="1">1 unidade</option>
-                <option value="2">2 unidades</option>
-                <option value="3">3 unidades</option>
-                <option value="4">4 unidades</option>
-                <option value="5">5 unidades</option>
-                <option value="6">6 unidades</option>
-                <option value="7">7 unidades</option>
-                <option value="8">8 unidades</option>
-                <option value="9">9 unidades</option>
-                <option value="10">10 unidades</option>
-                <option value="11">11 unidades</option>
-                <option value="12">12 unidades</option>
-                <option value="13">13 unidades</option>
-                <option value="14">14 unidades</option>
-                <option value="15">15 unidades</option>
-                <option value="16">16 unidades</option>
-                <option value="17">17 unidades</option>
-                <option value="18">18 unidades</option>
-                <option value="19">19 unidades</option>
-                <option value="20">20 unidades</option>
-                <option value="21">21 unidades</option>
-                <option value="22">22 unidades</option>
-                <option value="23">23 unidades</option>
-                <option value="24">24 unidades</option>
-                <option value="25">25 unidades</option>
-                <option value="26">26 unidades</option>
-                <option value="27">27 unidades</option>
-                <option value="28">28 unidades</option>
-                <option value="29">29 unidades</option>
-                <option value="30">30 unidades</option>
-                <option value="31">31 unidades</option>
-                <option value="32">32 unidades</option>
-                <option value="33">33 unidades</option>
-                <option value="34">34 unidades</option>
-                <option value="35">35 unidades</option>
-                <option value="36">36 unidades</option>
-                <option value="37">37 unidades</option>
-                <option value="38">38 unidades</option>
-                <option value="39">39 unidades</option>
-                <option value="40">40 unidades</option>
-                <option value="41">41 unidades</option>
-                <option value="42">42 unidades</option>
-                <option value="43">43 unidades</option>
-                <option value="44">44 unidades</option>
-                <option value="45">45 unidades</option>
-                <option value="46">46 unidades</option>
-                <option value="47">47 unidades</option>
-                <option value="48">48 unidades</option>
-                <option value="49">49 unidades</option>
-                <option value="50">50 unidades</option>
-              </select>
+              <div class="quantity-control">
+                <button type="button" class="quantity-btn" id="decreaseQuantity" aria-label="Diminuir quantidade">-</button>
+                <input class="quantity-input" type="number" id="quantity" min="1" max="50" step="1" value="1" inputmode="numeric" aria-label="Quantidade" />
+                <button type="button" class="quantity-btn" id="increaseQuantity" aria-label="Aumentar quantidade">+</button>
+              </div>
+              <p class="quantity-hint">Escolha de 1 a 50 unidades.</p>
             </div>
 
             <button type="button" class="btn-main" id="continueToAddress">
@@ -1057,6 +1057,8 @@
     const productButtons = document.querySelectorAll('.product-card');
     const paymentButtons = document.querySelectorAll('.payment-option');
     const quantitySelect = document.getElementById('quantity');
+    const decreaseQuantity = document.getElementById('decreaseQuantity');
+    const increaseQuantity = document.getElementById('increaseQuantity');
     const openButtons = [document.getElementById('openModal'), document.getElementById('openModalSub')];
     const continueToAddress = document.getElementById('continueToAddress');
     const continueToPayment = document.getElementById('continueToPayment');
@@ -1086,7 +1088,10 @@
     }).format(value);
 
     function updateSummary() {
-      const quantity = Number(quantitySelect.value);
+      let quantity = Number(quantitySelect.value);
+      if (Number.isNaN(quantity) || quantity < 1) quantity = 1;
+      if (quantity > 50) quantity = 50;
+      quantitySelect.value = String(quantity);
       const subtotal = quantity * unitPrice;
       const city = buyerCity.value.trim();
       const state = buyerState.value.trim().toUpperCase();
@@ -1149,6 +1154,17 @@
       scrollToSection(stepPayment);
     });
 
+    decreaseQuantity.addEventListener('click', () => {
+      quantitySelect.value = String(Math.max(1, Number(quantitySelect.value || 1) - 1));
+      updateSummary();
+    });
+
+    increaseQuantity.addEventListener('click', () => {
+      quantitySelect.value = String(Math.min(50, Number(quantitySelect.value || 1) + 1));
+      updateSummary();
+    });
+
+    quantitySelect.addEventListener('input', updateSummary);
     quantitySelect.addEventListener('change', updateSummary);
     buyerCep.addEventListener('input', updateSummary);
     buyerCity.addEventListener('input', updateSummary);
