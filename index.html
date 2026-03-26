@@ -52,12 +52,21 @@
     }
     .logo {
       font-family: 'Playfair Display', serif;
-      font-size: 1.25rem;
+      display: inline-flex;
+      align-items: baseline;
+      gap: .18rem;
+      font-size: 1.18rem;
       font-weight: 900;
       letter-spacing: .04em;
       color: var(--white);
+      text-transform: uppercase;
     }
-    .logo span { color: var(--red); }
+    .logo span:nth-child(odd) { color: var(--white); }
+    .logo span:nth-child(even) { color: var(--red); }
+    .logo span:nth-child(1) { font-size: .92em; }
+    .logo span:nth-child(2) { font-size: 1em; }
+    .logo span:nth-child(3) { font-size: 1.08em; }
+    .logo span:nth-child(4) { font-size: 1.16em; }
     .header-badge {
       font-size: .65rem;
       font-weight: 600;
@@ -776,7 +785,7 @@
 
   <!-- HEADER -->
   <header>
-    <div class="logo">Fla<span>Calcinha</span></div>
+    <div class="logo"><span>Vrá</span><span>Vrá</span><span>Vrá</span><span>Vrá</span></div>
     <div class="header-badge">Pré-venda</div>
   </header>
 
