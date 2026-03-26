@@ -1019,13 +1019,13 @@
   </footer>
 
   <!-- MODAL -->
-  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-label="Entrar na pré-venda">
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-label="Entrar na fila de espera">
     <div class="modal">
       <button class="modal-close" id="closeModal" aria-label="Fechar">×</button>
 
       <div id="formContent">
-        <h2>Entre na <span>pré-venda</span></h2>
-        <p>Garanta o seu Leque Flacalcinha antes de todo mundo. Quantidade limitada. Seja a primeira a saber.</p>
+        <h2>Entre na <span>fila de espera</span></h2>
+        <p>Deixe seus dados e te avisaremos assim que a proxima leva estiver pronta para chegar.</p>
 
         <div class="form-group">
           <label for="nome">Seu nome</label>
@@ -1036,18 +1036,18 @@
           <input type="email" id="email" placeholder="seu@email.com" autocomplete="email" />
         </div>
         <div class="form-group">
-          <label for="whats">WhatsApp (opcional)</label>
+          <label for="whats">Numero</label>
           <input type="tel" id="whats" placeholder="(21) 99999-9999" autocomplete="tel" />
         </div>
 
-        <button class="btn-form" id="submitForm">Quero o meu Leque 🔥</button>
-        <p class="modal-fine">Sem spam. Apenas novidades do lançamento.</p>
+        <button class="btn-form" id="submitForm">Entrar na fila de espera</button>
+        <p class="modal-fine">Sem spam. Apenas aviso de lancamento e novidades reais.</p>
       </div>
 
       <div class="success-msg" id="successMsg">
         <div class="check">🔥</div>
-        <h3>Você está na lista!</h3>
-        <p>Assim que a pré-venda abrir oficialmente, você será a primeira a saber. Prepare o coração.</p>
+        <h3>Voce entrou na fila</h3>
+        <p>Seu lugar esta guardado. Assim que a proxima leva chegar, voce sera avisada primeiro.</p>
       </div>
     </div>
   </div>
@@ -1059,7 +1059,16 @@
     const quantitySelect = document.getElementById('quantity');
     const decreaseQuantity = document.getElementById('decreaseQuantity');
     const increaseQuantity = document.getElementById('increaseQuantity');
-    const openButtons = [document.getElementById('openModal'), document.getElementById('openModalSub')];
+    const openCheckoutButton = document.getElementById('openModal');
+    const openLeadButton = document.getElementById('openModalSub');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const closeModalButton = document.getElementById('closeModal');
+    const submitLeadButton = document.getElementById('submitForm');
+    const leadFormContent = document.getElementById('formContent');
+    const leadSuccessMessage = document.getElementById('successMsg');
+    const leadNameInput = document.getElementById('nome');
+    const leadEmailInput = document.getElementById('email');
+    const leadPhoneInput = document.getElementById('whats');
     const continueToAddress = document.getElementById('continueToAddress');
     const continueToPayment = document.getElementById('continueToPayment');
     const checkoutSection = document.getElementById('checkout');
@@ -1137,11 +1146,35 @@
       });
     });
 
-    openButtons.forEach(button => {
-      button.addEventListener('click', event => {
-        event.preventDefault();
-        scrollToSection(checkoutSection);
-      });
+    function openLeadModal() {
+      leadFormContent.style.display = "block";
+      leadSuccessMessage.style.display = "none";
+      submitLeadButton.disabled = false;
+      submitLeadButton.textContent = "Entrar na fila de espera";
+      modalOverlay.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeLeadModal() {
+      modalOverlay.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+
+    openCheckoutButton.addEventListener('click', event => {
+      event.preventDefault();
+      scrollToSection(checkoutSection);
+    });
+
+    openLeadButton.addEventListener('click', event => {
+      event.preventDefault();
+      openLeadModal();
+    });
+
+    closeModalButton.addEventListener("click", closeLeadModal);
+    modalOverlay.addEventListener("click", event => {
+      if (event.target === modalOverlay) {
+        closeLeadModal();
+      }
     });
 
     continueToAddress.addEventListener('click', () => {
@@ -1179,6 +1212,42 @@
         }, 1800);
       } catch (error) {
           copyPixCode.textContent = 'Nao foi possivel copiar';
+      }
+    });
+
+    submitLeadButton.addEventListener("click", async () => {
+      const payload = {
+        name: leadNameInput.value.trim(),
+        email: leadEmailInput.value.trim(),
+        phone: leadPhoneInput.value.trim()
+      };
+
+      if (!payload.name || !payload.email || !payload.phone) {
+        if (!payload.name) leadNameInput.focus();
+        else if (!payload.email) leadEmailInput.focus();
+        else leadPhoneInput.focus();
+        return;
+      }
+
+      submitLeadButton.disabled = true;
+      submitLeadButton.textContent = "Enviando...";
+
+      try {
+        const response = await fetch("/api/lead-waitlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error("Falha ao enviar lead");
+        }
+
+        leadFormContent.style.display = "none";
+        leadSuccessMessage.style.display = "block";
+      } catch (error) {
+        submitLeadButton.disabled = false;
+        submitLeadButton.textContent = "Entrar na fila de espera";
       }
     });
 
