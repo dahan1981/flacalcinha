@@ -355,6 +355,23 @@
     }
     .form-group input:focus { border-color: var(--red); }
     .form-group input::placeholder { color: rgba(255,255,255,.25); }
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 6px;
+      padding: .85rem 1rem;
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem;
+      transition: border-color .2s;
+      outline: none;
+    }
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--red); }
+    .form-group textarea::placeholder { color: rgba(255,255,255,.25); }
+    .form-group textarea { min-height: 112px; resize: vertical; }
 
     .btn-form {
       width: 100%;
@@ -386,6 +403,233 @@
     .success-msg h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: .5rem; }
     .success-msg p { font-size: .88rem; color: rgba(255,255,255,.6); line-height: 1.6; }
 
+    .checkout-section {
+      position: relative;
+      z-index: 2;
+      padding: 4rem 1.5rem 5rem;
+      background:
+        radial-gradient(circle at top left, rgba(204,0,0,.14), transparent 35%),
+        linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)),
+        #101010;
+    }
+    .section-shell {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+    .section-header {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto 2.5rem;
+    }
+    .section-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .4rem .9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(212,168,67,.35);
+      color: var(--gold);
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      line-height: 1;
+      margin-bottom: .9rem;
+    }
+    .section-copy {
+      color: rgba(250,250,250,.7);
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+    .checkout-layout {
+      display: grid;
+      gap: 1.5rem;
+    }
+    .step-card,
+    .summary-card {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    }
+    .step-card h3,
+    .summary-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.55rem;
+      margin-bottom: .4rem;
+    }
+    .step-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      margin-bottom: 1rem;
+      border-radius: 50%;
+      background: rgba(204,0,0,.14);
+      border: 1px solid rgba(204,0,0,.35);
+      color: var(--red);
+      font-weight: 700;
+    }
+    .step-desc {
+      color: rgba(250,250,250,.6);
+      line-height: 1.6;
+      margin-bottom: 1.4rem;
+    }
+    .product-grid {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .product-card {
+      background: rgba(255,255,255,.025);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      padding: 1.2rem;
+      cursor: pointer;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+    }
+    .product-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(204,0,0,.35);
+    }
+    .product-card.active {
+      border-color: rgba(204,0,0,.8);
+      box-shadow: 0 0 0 1px rgba(204,0,0,.18), 0 18px 45px rgba(204,0,0,.14);
+      background: linear-gradient(180deg, rgba(204,0,0,.08), rgba(255,255,255,.02));
+    }
+    .product-title-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: .45rem;
+    }
+    .product-name {
+      font-size: 1.08rem;
+      font-weight: 700;
+    }
+    .product-price {
+      color: var(--gold);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .product-copy {
+      color: rgba(250,250,250,.62);
+      line-height: 1.6;
+      font-size: .94rem;
+    }
+    .field-grid {
+      display: grid;
+      gap: 1rem;
+    }
+    .hidden-step {
+      display: none;
+    }
+    .summary-card {
+      align-self: start;
+    }
+    .summary-list {
+      display: grid;
+      gap: .85rem;
+      margin-top: 1.2rem;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      color: rgba(250,250,250,.75);
+      font-size: .95rem;
+    }
+    .summary-row strong {
+      color: var(--white);
+      font-weight: 700;
+    }
+    .summary-total {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255,255,255,.08);
+      font-size: 1.08rem;
+    }
+    .summary-note,
+    .muted-note {
+      color: rgba(250,250,250,.48);
+      font-size: .8rem;
+      line-height: 1.6;
+      margin-top: .8rem;
+    }
+    .payment-methods {
+      display: grid;
+      gap: .8rem;
+      margin-bottom: 1rem;
+    }
+    .payment-option {
+      background: rgba(255,255,255,.025);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 1rem 1.1rem;
+      cursor: pointer;
+      transition: border-color .2s, transform .2s;
+    }
+    .payment-option.active {
+      border-color: rgba(204,0,0,.8);
+      background: rgba(204,0,0,.08);
+    }
+    .payment-option strong {
+      display: block;
+      margin-bottom: .25rem;
+    }
+    .payment-option span {
+      color: rgba(250,250,250,.6);
+      font-size: .9rem;
+      line-height: 1.5;
+    }
+    .payment-panel {
+      display: none;
+      margin-top: 1rem;
+      padding: 1.15rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.025);
+    }
+    .payment-panel.active {
+      display: block;
+    }
+    .qr-placeholder {
+      display: grid;
+      place-items: center;
+      min-height: 200px;
+      border-radius: 16px;
+      border: 1px dashed rgba(255,255,255,.18);
+      background: linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
+      color: rgba(250,250,250,.5);
+      text-align: center;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .pix-code-box {
+      padding: .9rem 1rem;
+      border-radius: 12px;
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.08);
+      font-size: .82rem;
+      line-height: 1.7;
+      color: rgba(250,250,250,.72);
+      word-break: break-all;
+    }
+    .copy-code {
+      margin-top: .9rem;
+    }
+    .payment-link.is-disabled {
+      opacity: .6;
+      pointer-events: none;
+    }
+
     /* ── FOOTER ── */
     footer {
       position: relative; z-index: 2;
@@ -408,6 +652,8 @@
     @media (min-width: 768px) {
       .hero-content { padding: 6rem 2rem 3rem; gap: 0; }
       .fan-wrap { width: 380px; }
+      .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .field-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     @media (min-width: 1024px) {
       .hero {
@@ -435,6 +681,8 @@
       .brand-name { font-size: clamp(4rem, 7vw, 7.5rem); }
       .fan-wrap { width: 420px; }
       .urgency { grid-column: 1 / 3; }
+      .checkout-layout { grid-template-columns: minmax(0, 1.35fr) minmax(320px, .7fr); }
+      .summary-card { position: sticky; top: 90px; }
     }
   </style>
 </head>
@@ -530,6 +778,228 @@
 
   </section><!-- /hero -->
 
+  <section class="checkout-section" id="checkout">
+    <div class="section-shell">
+      <div class="section-header">
+        <div class="section-kicker">Compra guiada</div>
+        <h2 class="section-title">Escolha seu leque e avance para o pagamento</h2>
+        <p class="section-copy">O valor unitario e de <strong>R$ 45,00</strong>. O frete entra no total final conforme o endereco informado. O Pix e o link do cartao ficam preparados para voce preencher depois com os dados reais.</p>
+      </div>
+
+      <div class="checkout-layout">
+        <div>
+          <section class="step-card" id="stepProduct">
+            <div class="step-label">1</div>
+            <h3>Escolha seu leque</h3>
+            <p class="step-desc">Selecione o modelo e a quantidade desejada. Voce pode pedir de 1 ate 50 unidades.</p>
+
+            <div class="product-grid">
+              <button type="button" class="product-card active" data-product="Leque Flacalcinha">
+                <div class="product-title-row">
+                  <span class="product-name">Leque Flacalcinha</span>
+                  <span class="product-price">R$ 45,00</span>
+                </div>
+                <p class="product-copy">Versao principal da marca, com foco total na identidade do projeto.</p>
+              </button>
+
+              <button type="button" class="product-card" data-product="Leque Flamengo">
+                <div class="product-title-row">
+                  <span class="product-name">Leque Flamengo</span>
+                  <span class="product-price">R$ 45,00</span>
+                </div>
+                <p class="product-copy">Opcao Flamengo para quem quer uma variacao do leque com o mesmo valor unitario.</p>
+              </button>
+            </div>
+
+            <div class="form-group">
+              <label for="quantity">Quantidade</label>
+              <select id="quantity" aria-label="Quantidade">
+                <option value="1">1 unidade</option>
+                <option value="2">2 unidades</option>
+                <option value="3">3 unidades</option>
+                <option value="4">4 unidades</option>
+                <option value="5">5 unidades</option>
+                <option value="6">6 unidades</option>
+                <option value="7">7 unidades</option>
+                <option value="8">8 unidades</option>
+                <option value="9">9 unidades</option>
+                <option value="10">10 unidades</option>
+                <option value="11">11 unidades</option>
+                <option value="12">12 unidades</option>
+                <option value="13">13 unidades</option>
+                <option value="14">14 unidades</option>
+                <option value="15">15 unidades</option>
+                <option value="16">16 unidades</option>
+                <option value="17">17 unidades</option>
+                <option value="18">18 unidades</option>
+                <option value="19">19 unidades</option>
+                <option value="20">20 unidades</option>
+                <option value="21">21 unidades</option>
+                <option value="22">22 unidades</option>
+                <option value="23">23 unidades</option>
+                <option value="24">24 unidades</option>
+                <option value="25">25 unidades</option>
+                <option value="26">26 unidades</option>
+                <option value="27">27 unidades</option>
+                <option value="28">28 unidades</option>
+                <option value="29">29 unidades</option>
+                <option value="30">30 unidades</option>
+                <option value="31">31 unidades</option>
+                <option value="32">32 unidades</option>
+                <option value="33">33 unidades</option>
+                <option value="34">34 unidades</option>
+                <option value="35">35 unidades</option>
+                <option value="36">36 unidades</option>
+                <option value="37">37 unidades</option>
+                <option value="38">38 unidades</option>
+                <option value="39">39 unidades</option>
+                <option value="40">40 unidades</option>
+                <option value="41">41 unidades</option>
+                <option value="42">42 unidades</option>
+                <option value="43">43 unidades</option>
+                <option value="44">44 unidades</option>
+                <option value="45">45 unidades</option>
+                <option value="46">46 unidades</option>
+                <option value="47">47 unidades</option>
+                <option value="48">48 unidades</option>
+                <option value="49">49 unidades</option>
+                <option value="50">50 unidades</option>
+              </select>
+            </div>
+
+            <button type="button" class="btn-main" id="continueToAddress">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              Continuar para endereco
+            </button>
+          </section>
+
+          <section class="step-card hidden-step" id="stepAddress">
+            <div class="step-label">2</div>
+            <h3>Informe o endereco para o frete</h3>
+            <p class="step-desc">Preencha os dados de entrega. O frete sera definido a partir desse endereco.</p>
+
+            <div class="field-grid">
+              <div class="form-group">
+                <label for="buyerName">Nome completo</label>
+                <input type="text" id="buyerName" placeholder="Seu nome" autocomplete="name" />
+              </div>
+              <div class="form-group">
+                <label for="buyerEmail">E-mail</label>
+                <input type="email" id="buyerEmail" placeholder="seu@email.com" autocomplete="email" />
+              </div>
+              <div class="form-group">
+                <label for="buyerPhone">WhatsApp</label>
+                <input type="tel" id="buyerPhone" placeholder="(21) 99999-9999" autocomplete="tel" />
+              </div>
+              <div class="form-group">
+                <label for="buyerCep">CEP</label>
+                <input type="text" id="buyerCep" placeholder="00000-000" autocomplete="postal-code" />
+              </div>
+              <div class="form-group">
+                <label for="buyerStreet">Rua / Avenida</label>
+                <input type="text" id="buyerStreet" placeholder="Endereco" autocomplete="address-line1" />
+              </div>
+              <div class="form-group">
+                <label for="buyerNumber">Numero</label>
+                <input type="text" id="buyerNumber" placeholder="Numero" autocomplete="address-line2" />
+              </div>
+              <div class="form-group">
+                <label for="buyerDistrict">Bairro</label>
+                <input type="text" id="buyerDistrict" placeholder="Bairro" />
+              </div>
+              <div class="form-group">
+                <label for="buyerCity">Cidade</label>
+                <input type="text" id="buyerCity" placeholder="Cidade" autocomplete="address-level2" />
+              </div>
+              <div class="form-group">
+                <label for="buyerState">Estado</label>
+                <input type="text" id="buyerState" placeholder="UF" maxlength="2" autocomplete="address-level1" />
+              </div>
+              <div class="form-group">
+                <label for="buyerComplement">Complemento</label>
+                <input type="text" id="buyerComplement" placeholder="Apartamento, bloco, referencia..." />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="shippingNotes">Observacoes do pedido</label>
+              <textarea id="shippingNotes" placeholder="Se houver alguma observacao importante para entrega ou pagamento, deixe aqui."></textarea>
+            </div>
+
+            <button type="button" class="btn-main" id="continueToPayment">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              Continuar para pagamento
+            </button>
+          </section>
+
+          <section class="step-card hidden-step" id="stepPayment">
+            <div class="step-label">3</div>
+            <h3>Escolha a forma de pagamento</h3>
+            <p class="step-desc">Selecione se o pagamento sera por Pix ou cartao de credito.</p>
+
+            <div class="payment-methods">
+              <button type="button" class="payment-option active" data-payment="pix">
+                <strong>Pix</strong>
+                <span>Mostra QR Code e codigo copia e cola para pagamento instantaneo.</span>
+              </button>
+              <button type="button" class="payment-option" data-payment="card">
+                <strong>Cartao de credito</strong>
+                <span>Direciona para o link de pagamento que voce vai me enviar.</span>
+              </button>
+            </div>
+
+            <div class="payment-panel active" id="panelPix">
+              <div class="qr-placeholder">
+                <div>
+                  <strong>QR Code Pix</strong>
+                  <p class="muted-note">Assim que voce me mandar o QR Code e o copia e cola, eu substituo este bloco pelo pagamento real.</p>
+                </div>
+              </div>
+              <div class="pix-code-box" id="pixCode">PIX copia e cola sera inserido aqui.</div>
+              <button type="button" class="btn-main copy-code" id="copyPixCode">Copiar chave Pix</button>
+            </div>
+
+            <div class="payment-panel" id="panelCard">
+              <a href="#" class="btn-main payment-link is-disabled" id="cardPaymentLink" aria-disabled="true">Link de pagamento em configuracao</a>
+              <p class="muted-note">Quando voce me enviar o link do cartao, eu deixo este botao ativo e apontando para o checkout real.</p>
+            </div>
+          </section>
+        </div>
+
+        <aside class="summary-card">
+          <h3>Resumo do pedido</h3>
+          <p class="step-desc">Acompanhe aqui a selecao do produto, quantidade e base de calculo.</p>
+
+          <div class="summary-list">
+            <div class="summary-row">
+              <span>Leque escolhido</span>
+              <strong id="summaryProduct">Leque Flacalcinha</strong>
+            </div>
+            <div class="summary-row">
+              <span>Quantidade</span>
+              <strong id="summaryQuantity">1</strong>
+            </div>
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <strong id="summarySubtotal">R$ 45,00</strong>
+            </div>
+            <div class="summary-row">
+              <span>Frete</span>
+              <strong id="summaryShipping">A calcular</strong>
+            </div>
+          </div>
+
+          <div class="summary-row summary-total">
+            <span>Total</span>
+            <strong id="summaryTotal">R$ 45,00 + frete</strong>
+          </div>
+
+          <p class="summary-note" id="shippingHelper">Informe o endereco para fechar o valor do frete e confirmar o pagamento.</p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
   <!-- FOOTER -->
   <footer>
     <strong>FlaCalcinha</strong> &nbsp;·&nbsp; Produto independente, sem vínculo com qualquer entidade desportiva oficial &nbsp;·&nbsp; © 2025
@@ -570,41 +1040,120 @@
   </div>
 
   <script>
-    const overlay   = document.getElementById('modalOverlay');
-    const closeBtn  = document.getElementById('closeModal');
-    const openBtns  = [document.getElementById('openModal'), document.getElementById('openModalSub')];
-    const submitBtn = document.getElementById('submitForm');
-    const formContent = document.getElementById('formContent');
-    const successMsg  = document.getElementById('successMsg');
+    const unitPrice = 45;
+    const productButtons = document.querySelectorAll('.product-card');
+    const paymentButtons = document.querySelectorAll('.payment-option');
+    const quantitySelect = document.getElementById('quantity');
+    const openButtons = [document.getElementById('openModal'), document.getElementById('openModalSub')];
+    const continueToAddress = document.getElementById('continueToAddress');
+    const continueToPayment = document.getElementById('continueToPayment');
+    const checkoutSection = document.getElementById('checkout');
+    const stepAddress = document.getElementById('stepAddress');
+    const stepPayment = document.getElementById('stepPayment');
+    const summaryProduct = document.getElementById('summaryProduct');
+    const summaryQuantity = document.getElementById('summaryQuantity');
+    const summarySubtotal = document.getElementById('summarySubtotal');
+    const summaryShipping = document.getElementById('summaryShipping');
+    const summaryTotal = document.getElementById('summaryTotal');
+    const shippingHelper = document.getElementById('shippingHelper');
+    const buyerCep = document.getElementById('buyerCep');
+    const buyerCity = document.getElementById('buyerCity');
+    const buyerState = document.getElementById('buyerState');
+    const pixCode = document.getElementById('pixCode');
+    const copyPixCode = document.getElementById('copyPixCode');
+    const panelPix = document.getElementById('panelPix');
+    const panelCard = document.getElementById('panelCard');
 
-    openBtns.forEach(btn => btn.addEventListener('click', e => {
-      e.preventDefault();
-      overlay.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }));
+    let selectedProduct = 'Leque Flacalcinha';
+    let selectedPayment = 'pix';
 
-    closeBtn.addEventListener('click', () => {
-      overlay.classList.remove('open');
-      document.body.style.overflow = '';
+    const formatCurrency = value => new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+
+    function updateSummary() {
+      const quantity = Number(quantitySelect.value);
+      const subtotal = quantity * unitPrice;
+      const city = buyerCity.value.trim();
+      const state = buyerState.value.trim().toUpperCase();
+      const cep = buyerCep.value.trim();
+
+      summaryProduct.textContent = selectedProduct;
+      summaryQuantity.textContent = String(quantity);
+      summarySubtotal.textContent = formatCurrency(subtotal);
+      summaryTotal.textContent = `${formatCurrency(subtotal)} + frete`;
+
+      if (city && state) {
+        summaryShipping.textContent = `Calcular para ${city}/${state}`;
+        shippingHelper.textContent = `Frete sera fechado para entrega em ${city}/${state}${cep ? `, CEP ${cep}` : ''}.`;
+      } else if (cep) {
+        summaryShipping.textContent = `Calcular para CEP ${cep}`;
+        shippingHelper.textContent = 'CEP informado. Complete cidade e estado para fechar o frete.';
+      } else {
+        summaryShipping.textContent = 'A calcular';
+        shippingHelper.textContent = 'Informe o endereco para fechar o valor do frete e confirmar o pagamento.';
+      }
+    }
+
+    function scrollToSection(section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    productButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        productButtons.forEach(item => item.classList.remove('active'));
+        button.classList.add('active');
+        selectedProduct = button.dataset.product;
+        updateSummary();
+      });
     });
 
-    overlay.addEventListener('click', e => {
-      if (e.target === overlay) {
-        overlay.classList.remove('open');
-        document.body.style.overflow = '';
+    paymentButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        paymentButtons.forEach(item => item.classList.remove('active'));
+        button.classList.add('active');
+        selectedPayment = button.dataset.payment;
+        panelPix.classList.toggle('active', selectedPayment === 'pix');
+        panelCard.classList.toggle('active', selectedPayment === 'card');
+      });
+    });
+
+    openButtons.forEach(button => {
+      button.addEventListener('click', event => {
+        event.preventDefault();
+        scrollToSection(checkoutSection);
+      });
+    });
+
+    continueToAddress.addEventListener('click', () => {
+      stepAddress.classList.remove('hidden-step');
+      scrollToSection(stepAddress);
+    });
+
+    continueToPayment.addEventListener('click', () => {
+      stepPayment.classList.remove('hidden-step');
+      scrollToSection(stepPayment);
+    });
+
+    quantitySelect.addEventListener('change', updateSummary);
+    buyerCep.addEventListener('input', updateSummary);
+    buyerCity.addEventListener('input', updateSummary);
+    buyerState.addEventListener('input', updateSummary);
+
+    copyPixCode.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(pixCode.textContent.trim());
+        copyPixCode.textContent = 'Pix copiado';
+        setTimeout(() => {
+          copyPixCode.textContent = 'Copiar chave Pix';
+        }, 1800);
+      } catch (error) {
+          copyPixCode.textContent = 'Nao foi possivel copiar';
       }
     });
 
-    submitBtn.addEventListener('click', () => {
-      const email = document.getElementById('email').value.trim();
-      if (!email || !email.includes('@')) {
-        document.getElementById('email').style.borderColor = '#CC0000';
-        document.getElementById('email').focus();
-        return;
-      }
-      formContent.style.display = 'none';
-      successMsg.style.display  = 'block';
-    });
+    updateSummary();
   </script>
 
 </body>
