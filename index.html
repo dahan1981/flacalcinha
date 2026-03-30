@@ -785,6 +785,62 @@
       line-height: 1.7;
       color: rgba(250,250,250,.72);
     }
+    .privacy-section {
+      position: relative;
+      z-index: 2;
+      padding: 0 1.5rem 4rem;
+      background:
+        radial-gradient(circle at top left, rgba(204,0,0,.08), transparent 30%),
+        linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,.01)),
+        #101010;
+    }
+    .privacy-card {
+      max-width: 1180px;
+      margin: 0 auto;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    }
+    .privacy-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem;
+      margin-bottom: .5rem;
+    }
+    .privacy-card > p {
+      color: rgba(250,250,250,.68);
+      line-height: 1.7;
+      margin-bottom: 1.4rem;
+    }
+    .privacy-grid {
+      display: grid;
+      gap: 1rem;
+    }
+    .privacy-block {
+      padding: 1rem 1.05rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.02);
+    }
+    .privacy-block h4 {
+      margin-bottom: .45rem;
+      color: #fff3df;
+      font-size: 1rem;
+    }
+    .privacy-block p {
+      color: rgba(250,250,250,.7);
+      line-height: 1.7;
+      font-size: .92rem;
+    }
+    .privacy-actions {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255,255,255,.08);
+      color: rgba(250,250,250,.62);
+      font-size: .88rem;
+      line-height: 1.7;
+    }
 
     /* â”€â”€ FOOTER â”€â”€ */
     footer {
@@ -810,6 +866,7 @@
       .fan-wrap { width: 380px; }
       .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .field-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .privacy-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .summary-mobile-cta { display: none; }
     }
     @media (min-width: 1024px) {
@@ -1144,9 +1201,47 @@
     </div>
   </section>
 
+  <section class="privacy-section" id="privacidade">
+    <div class="privacy-card">
+      <h3>Política de Privacidade</h3>
+      <p>Esta página explica de forma objetiva como a Flacalcinha trata dados pessoais no site. O tratamento segue a LGPD, com foco em minimização, finalidade específica e uso apenas do que for necessário para compra, fila de espera e comunicações transacionais.</p>
+
+      <div class="privacy-grid">
+        <div class="privacy-block">
+          <h4>Quais dados coletamos</h4>
+          <p>Na compra, coletamos nome, e-mail, telefone e endereço para processar o pedido, encaminhar ao gateway de pagamento e organizar entrega. Na fila de espera, coletamos nome, e-mail e número apenas para avisar sobre lançamento e disponibilidade.</p>
+        </div>
+        <div class="privacy-block">
+          <h4>Para que usamos</h4>
+          <p>Os dados são usados para gerar o checkout do Mercado Pago, confirmar pagamento, enviar e-mails transacionais, responder contatos e organizar o atendimento do pedido. Não usamos esses dados para finalidades incompatíveis com a compra ou com a fila de espera.</p>
+        </div>
+        <div class="privacy-block">
+          <h4>Com quem compartilhamos</h4>
+          <p>Compartilhamos apenas o necessário com prestadores operacionais do site, como Mercado Pago para pagamento e Resend para envio de e-mails. Não mantemos dados financeiros completos dentro do código do site.</p>
+        </div>
+        <div class="privacy-block">
+          <h4>Como protegemos</h4>
+          <p>O site evita gravar dados pessoais sensíveis no navegador, utiliza variáveis de ambiente para credenciais, reduz metadados enviados a terceiros e aplica consentimento explícito nos formulários. Respostas sensíveis das APIs usam política de não armazenamento em cache.</p>
+        </div>
+        <div class="privacy-block">
+          <h4>Direitos da titular</h4>
+          <p>Você pode solicitar confirmação de tratamento, acesso, correção, exclusão, anonimização quando cabível e revogação do consentimento para os casos em que ele for a base aplicável.</p>
+        </div>
+        <div class="privacy-block">
+          <h4>Retenção</h4>
+          <p>Os dados devem permanecer apenas pelo tempo necessário para concluir o pedido, cumprir obrigações legais, atender suporte e registrar comunicações operacionais. A revisão periódica de retenção faz parte da rotina operacional da loja.</p>
+        </div>
+      </div>
+
+      <div class="privacy-actions">
+        Para exercer direitos relacionados a dados pessoais, corrigir informações ou pedir exclusão de dados de fila de espera, utilize o canal operacional informado pela loja. Esta política pode ser atualizada quando o fluxo de frete, pagamento ou atendimento mudar.
+      </div>
+    </div>
+  </section>
+
   <!-- FOOTER -->
   <footer>
-    <strong>FlaCalcinha</strong> &nbsp;·&nbsp; Produto independente, sem vínculo com qualquer entidade desportiva oficial &nbsp;·&nbsp; © 2025
+    <strong>FlaCalcinha</strong> &nbsp;·&nbsp; <a href="#privacidade" style="color:rgba(255,255,255,.52);">Política de Privacidade</a> &nbsp;·&nbsp; Produto independente, sem vínculo com qualquer entidade desportiva oficial &nbsp;·&nbsp; © 2025
   </footer>
 
   <!-- MODAL -->
