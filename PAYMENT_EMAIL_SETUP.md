@@ -3,46 +3,33 @@ Pagamento confirmado por e-mail
 O projeto agora tem um webhook em `api/payment-webhook.js`.
 
 Objetivo:
-- quando o pagamento chegar com status pago/aprovado/completed, o Vercel envia e-mail para `lomaduda31@gmail.com`
+- quando o Mercado Pago confirmar um pagamento aprovado, o Vercel envia e-mail para `flacalcinhasrn@gmail.com`
+- a cliente tambem recebe um e-mail de confirmacao do pedido
 
 Variaveis de ambiente no Vercel:
 - `RESEND_API_KEY`
-- `PAYMENT_WEBHOOK_SECRET`
+- `MP_ACCESS_TOKEN`
+- `MP_WEBHOOK_SECRET`
 - `NOTIFICATION_EMAIL`
 
 Valor recomendado:
-- `NOTIFICATION_EMAIL=lomaduda31@gmail.com`
+- `NOTIFICATION_EMAIL=flacalcinhasrn@gmail.com`
 
 URL do webhook:
 - `/api/payment-webhook`
 
 Seguranca:
-- envie o header `x-webhook-secret` com o mesmo valor de `PAYMENT_WEBHOOK_SECRET`
+- configure a assinatura secreta do Mercado Pago e use o mesmo valor em `MP_WEBHOOK_SECRET`
 
-Payload minimo aceito:
+Rota de criacao do checkout:
+- `POST /api/create-payment-preference`
 
-```json
-{
-  "status": "paid",
-  "orderId": "pedido-123",
-  "paymentMethod": "pix",
-  "customerName": "Maria",
-  "email": "maria@email.com",
-  "phone": "(21) 99999-9999",
-  "productName": "Leque Flacalcinha",
-  "quantity": 2,
-  "subtotal": 90,
-  "shippingCost": 18,
-  "total": 108,
-  "addressLine": "Rua Exemplo",
-  "addressNumber": "123",
-  "district": "Centro",
-  "city": "Rio de Janeiro",
-  "state": "RJ",
-  "postalCode": "20000-000",
-  "notes": "Entregar em horario comercial"
-}
-```
+Fluxo:
+- o frontend envia cliente, endereco, produto e quantidade para `api/create-payment-preference`
+- a function cria a preferencia do Checkout Pro e redireciona para o Mercado Pago
+- o Mercado Pago chama `api/payment-webhook`
+- o webhook consulta o pagamento real na API do Mercado Pago
+- se o status estiver `approved`, envia e-mail para a operacao e para a cliente
 
 Observacao:
-- quando voce me disser qual provedor vai cobrar o Pix e o cartao, eu ajusto o webhook para o formato exato dele
+- o frete por CEP ainda nao esta integrado nesta versao

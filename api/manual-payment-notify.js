@@ -1,4 +1,4 @@
-const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || "lomaduda31@gmail.com";
+const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || "flacalcinhasrn@gmail.com";
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
 function parseJsonBody(req) {

@@ -1,6 +1,7 @@
-const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || "lomaduda31@gmail.com";
+const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || "flacalcinhasrn@gmail.com";
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const PAYMENT_WEBHOOK_SECRET = process.env.PAYMENT_WEBHOOK_SECRET;
+const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
+const MP_WEBHOOK_SECRET = process.env.MP_WEBHOOK_SECRET;
 
 function getHeader(req, name) {
   const value = req.headers?.[name] ?? req.headers?.[name.toLowerCase()];
@@ -23,78 +24,19 @@ function parseJsonBody(req) {
   return null;
 }
 
-function normalizeStatus(value) {
+function escapeHtml(value) {
   return String(value || "")
-    .trim()
-    .toLowerCase();
-}
-
-function isPaidStatus(status) {
-  return ["paid", "approved", "completed", "succeeded", "success"].includes(status);
-}
-
-function extractOrder(payload) {
-  const order = payload?.order || payload?.data || payload?.payment || payload || {};
-  const customer = order.customer || payload?.customer || {};
-  const shipping = order.shipping || order.address || payload?.shipping || {};
-  const items = Array.isArray(order.items) ? order.items : [];
-  const primaryItem = items[0] || {};
-
-  return {
-    status: normalizeStatus(order.status || payload?.status || payload?.event),
-    paymentMethod:
-      order.paymentMethod ||
-      order.payment_method ||
-      payload?.paymentMethod ||
-      payload?.payment_method ||
-      "Nao informado",
-    orderId: order.id || order.orderId || payload?.id || payload?.orderId || "Sem ID",
-    customerName:
-      customer.name ||
-      order.customerName ||
-      order.name ||
-      payload?.customerName ||
-      "Cliente",
-    customerEmail: customer.email || order.email || payload?.email || "Nao informado",
-    customerPhone: customer.phone || order.phone || payload?.phone || "Nao informado",
-    productName:
-      primaryItem.name ||
-      order.productName ||
-      payload?.productName ||
-      "Leque Flacalcinha",
-    quantity: Number(primaryItem.quantity || order.quantity || payload?.quantity || 1),
-    subtotal:
-      order.subtotal ||
-      payload?.subtotal ||
-      order.amount ||
-      payload?.amount ||
-      null,
-    shippingCost: order.shippingCost || order.shipping_cost || payload?.shippingCost || null,
-    total: order.total || payload?.total || order.amount || payload?.amount || null,
-    notes: order.notes || payload?.notes || "",
-    addressLine:
-      shipping.street ||
-      shipping.address ||
-      order.addressLine ||
-      payload?.addressLine ||
-      "Endereco nao informado",
-    addressNumber: shipping.number || order.addressNumber || payload?.addressNumber || "s/n",
-    district: shipping.district || payload?.district || "Nao informado",
-    city: shipping.city || payload?.city || "Nao informado",
-    state: shipping.state || payload?.state || "Nao informado",
-    postalCode: shipping.postalCode || shipping.zip || payload?.postalCode || payload?.zip || "Nao informado",
-    raw: payload
-  };
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 }
 
 function formatMoney(value) {
-  if (value === null || value === undefined || value === "") {
-    return "Nao informado";
-  }
-
   const numeric = Number(value);
   if (Number.isNaN(numeric)) {
-    return String(value);
+    return "Nao informado";
   }
 
   return new Intl.NumberFormat("pt-BR", {
@@ -103,60 +45,218 @@ function formatMoney(value) {
   }).format(numeric);
 }
 
-function buildEmail(order) {
-  const subject = `${order.customerName} adquiriu o leque dela`;
-  const html = `
-    <div style="font-family: Arial, sans-serif; background:#0d0d0d; color:#fafafa; padding:32px;">
-      <div style="max-width:640px; margin:0 auto; background:#151515; border:1px solid #2b2b2b; border-radius:18px; overflow:hidden;">
-        <div style="padding:28px 28px 20px; background:linear-gradient(135deg,#8b0000,#cc0000);">
-          <p style="margin:0 0 8px; font-size:12px; letter-spacing:1.6px; text-transform:uppercase; opacity:.9;">Novo pedido confirmado</p>
-          <h1 style="margin:0; font-size:28px; line-height:1.2;">${order.customerName} adquiriu o leque dela</h1>
+function parseSignature(signatureHeader) {
+  const entries = String(signatureHeader || "")
+    .split(",")
+    .map(part => part.trim())
+    .filter(Boolean)
+    .reduce((accumulator, part) => {
+      const [key, value] = part.split("=");
+      if (key && value) {
+        accumulator[key] = value;
+      }
+      return accumulator;
+    }, {});
+
+  return {
+    ts: entries.ts || "",
+    v1: entries.v1 || ""
+  };
+}
+
+function getQueryParams(req) {
+  const base = `https://${getHeader(req, "host") || "flacalcinha.vercel.app"}`;
+  const url = new URL(req.url || "/", base);
+  return url.searchParams;
+}
+
+function getNotificationId(req, payload) {
+  const params = getQueryParams(req);
+  return (
+    params.get("data.id") ||
+    params.get("id") ||
+    payload?.data?.id ||
+    payload?.id ||
+    ""
+  );
+}
+
+async function createWebhookHash(secret, manifest) {
+  const encoder = new TextEncoder();
+  const key = await globalThis.crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await globalThis.crypto.subtle.sign("HMAC", key, encoder.encode(manifest));
+  return Array.from(new Uint8Array(signature))
+    .map(byte => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function verifyWebhookSignature(req, notificationId) {
+  if (!MP_WEBHOOK_SECRET) {
+    return true;
+  }
+
+  const signatureHeader = getHeader(req, "x-signature");
+  const requestId = getHeader(req, "x-request-id");
+  if (!signatureHeader || !requestId || !notificationId) {
+    return false;
+  }
+
+  const { ts, v1 } = parseSignature(signatureHeader);
+  if (!ts || !v1) {
+    return false;
+  }
+
+  const manifest = `id:${notificationId};request-id:${requestId};ts:${ts};`;
+  const hash = await createWebhookHash(MP_WEBHOOK_SECRET, manifest);
+  return hash === v1;
+}
+
+async function getPaymentDetails(paymentId) {
+  if (!MP_ACCESS_TOKEN) {
+    throw new Error("MP_ACCESS_TOKEN nao configurado");
+  }
+
+  const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
+      "Content-Type": "application/json"
+    }
+  });
+
+  const result = await response.json().catch(() => null);
+  if (!response.ok || !result?.id) {
+    const apiError = result?.message || result?.error || "Falha ao consultar pagamento";
+    throw new Error(apiError);
+  }
+
+  return result;
+}
+
+function normalizePayment(payment) {
+  const metadata = payment.metadata || {};
+  const item = payment.additional_info?.items?.[0] || {};
+
+  return {
+    id: payment.id,
+    status: String(payment.status || "").toLowerCase(),
+    externalReference: payment.external_reference || "Sem referencia",
+    paymentMethod:
+      payment.payment_method_id === "pix"
+        ? "Pix"
+        : payment.payment_type_id === "credit_card"
+          ? "Cartao de credito"
+          : payment.payment_method_id || payment.payment_type_id || "Mercado Pago",
+    customerName: metadata.customer_name || payment.payer?.first_name || "Cliente",
+    customerEmail: metadata.customer_email || payment.payer?.email || "",
+    customerPhone:
+      metadata.customer_phone ||
+      payment.payer?.phone?.number ||
+      payment.additional_info?.payer?.phone?.number ||
+      "",
+    productName: metadata.product_name || item.title || "Leque Flacalcinha",
+    quantity: Number(metadata.quantity || item.quantity || 1),
+    subtotal: Number(metadata.subtotal || payment.transaction_details?.total_paid_amount || payment.transaction_amount || 0),
+    shippingCost: Number(metadata.shipping_cost || 0),
+    total: Number(payment.transaction_amount || metadata.subtotal || 0),
+    address: {
+      cep: metadata.address_cep || "Nao informado",
+      street: metadata.address_street || "Endereco nao informado",
+      number: metadata.address_number || "s/n",
+      district: metadata.address_district || "Nao informado",
+      city: metadata.address_city || "Nao informado",
+      state: metadata.address_state || "Nao informado",
+      complement: metadata.address_complement || "",
+      notes: metadata.shipping_notes || ""
+    }
+  };
+}
+
+function buildAdminEmail(order) {
+  return {
+    subject: `${order.customerName} adquiriu o leque dela`,
+    html: `
+      <div style="font-family: Arial, sans-serif; background:#0d0d0d; color:#fafafa; padding:32px;">
+        <div style="max-width:680px; margin:0 auto; background:#151515; border:1px solid #2b2b2b; border-radius:18px; overflow:hidden;">
+          <div style="padding:28px 28px 20px; background:linear-gradient(135deg,#8b0000,#cc0000);">
+            <p style="margin:0 0 8px; font-size:12px; letter-spacing:1.6px; text-transform:uppercase; opacity:.9;">Pedido aprovado</p>
+            <h1 style="margin:0; font-size:28px; line-height:1.2;">${escapeHtml(order.customerName)} adquiriu o leque dela</h1>
+          </div>
+          <div style="padding:28px;">
+            <p style="margin:0 0 18px; color:#d8d8d8; line-height:1.7;">
+              O Mercado Pago confirmou o pagamento e o pedido ja esta validado automaticamente.
+            </p>
+            <div style="background:#101010; border:1px solid #2b2b2b; border-radius:14px; padding:18px; margin-bottom:16px;">
+              <p style="margin:0 0 8px;"><strong>Pedido:</strong> ${escapeHtml(order.externalReference)}</p>
+              <p style="margin:0 0 8px;"><strong>Pagamento:</strong> ${escapeHtml(order.paymentMethod)}</p>
+              <p style="margin:0 0 8px;"><strong>ID do pagamento:</strong> ${escapeHtml(order.id)}</p>
+              <p style="margin:0 0 8px;"><strong>Produto:</strong> ${escapeHtml(order.productName)}</p>
+              <p style="margin:0 0 8px;"><strong>Quantidade:</strong> ${escapeHtml(order.quantity)}</p>
+              <p style="margin:0 0 8px;"><strong>Subtotal:</strong> ${formatMoney(order.subtotal)}</p>
+              <p style="margin:0 0 8px;"><strong>Frete:</strong> Em integracao por CEP</p>
+              <p style="margin:0;"><strong>Total pago:</strong> ${formatMoney(order.total)}</p>
+            </div>
+            <div style="background:#101010; border:1px solid #2b2b2b; border-radius:14px; padding:18px; margin-bottom:16px;">
+              <p style="margin:0 0 8px;"><strong>Nome:</strong> ${escapeHtml(order.customerName)}</p>
+              <p style="margin:0 0 8px;"><strong>E-mail:</strong> ${escapeHtml(order.customerEmail)}</p>
+              <p style="margin:0;"><strong>Numero:</strong> ${escapeHtml(order.customerPhone || "-")}</p>
+            </div>
+            <div style="background:#101010; border:1px solid #2b2b2b; border-radius:14px; padding:18px;">
+              <p style="margin:0 0 8px;"><strong>CEP:</strong> ${escapeHtml(order.address.cep)}</p>
+              <p style="margin:0 0 8px;"><strong>Rua e numero:</strong> ${escapeHtml(`${order.address.street}, ${order.address.number}`)}</p>
+              <p style="margin:0 0 8px;"><strong>Regiao:</strong> ${escapeHtml(`${order.address.district} - ${order.address.city}/${order.address.state}`)}</p>
+              <p style="margin:0 0 8px;"><strong>Complemento:</strong> ${escapeHtml(order.address.complement || "-")}</p>
+              <p style="margin:0;"><strong>Observacoes:</strong> ${escapeHtml(order.address.notes || "-")}</p>
+            </div>
+          </div>
         </div>
+      </div>
+    `
+  };
+}
 
-        <div style="padding:28px;">
-          <p style="margin:0 0 18px; color:#d8d8d8; line-height:1.7;">
-            O pagamento foi confirmado e a torcida ganhou mais uma dona de leque. Seguem os detalhes do pedido para voce acompanhar.
-          </p>
-
-          <div style="background:#101010; border:1px solid #2b2b2b; border-radius:14px; padding:18px; margin-bottom:18px;">
-            <p style="margin:0 0 8px;"><strong>Pedido:</strong> ${order.orderId}</p>
-            <p style="margin:0 0 8px;"><strong>Produto:</strong> ${order.productName}</p>
-            <p style="margin:0 0 8px;"><strong>Quantidade:</strong> ${order.quantity}</p>
-            <p style="margin:0 0 8px;"><strong>Pagamento:</strong> ${order.paymentMethod}</p>
-            <p style="margin:0 0 8px;"><strong>Subtotal:</strong> ${formatMoney(order.subtotal)}</p>
-            <p style="margin:0 0 8px;"><strong>Frete:</strong> ${formatMoney(order.shippingCost)}</p>
-            <p style="margin:0;"><strong>Total:</strong> ${formatMoney(order.total)}</p>
+function buildCustomerEmail(order) {
+  return {
+    subject: "Seu pedido Flacalcinha foi confirmado",
+    html: `
+      <div style="font-family: Arial, sans-serif; background:#0d0d0d; color:#fafafa; padding:32px;">
+        <div style="max-width:680px; margin:0 auto; background:#151515; border:1px solid #2b2b2b; border-radius:18px; overflow:hidden;">
+          <div style="padding:28px 28px 20px; background:linear-gradient(135deg,#8b0000,#cc0000);">
+            <p style="margin:0 0 8px; font-size:12px; letter-spacing:1.6px; text-transform:uppercase; opacity:.9;">Pagamento confirmado</p>
+            <h1 style="margin:0; font-size:28px; line-height:1.2;">Seu leque ja esta garantido</h1>
           </div>
-
-          <div style="background:#101010; border:1px solid #2b2b2b; border-radius:14px; padding:18px; margin-bottom:18px;">
-            <p style="margin:0 0 8px;"><strong>Cliente:</strong> ${order.customerName}</p>
-            <p style="margin:0 0 8px;"><strong>E-mail:</strong> ${order.customerEmail}</p>
-            <p style="margin:0 0 8px;"><strong>WhatsApp:</strong> ${order.customerPhone}</p>
-            <p style="margin:0;"><strong>Observacoes:</strong> ${order.notes || "Nenhuma"}</p>
-          </div>
-
-          <div style="background:#101010; border:1px solid #2b2b2b; border-radius:14px; padding:18px;">
-            <p style="margin:0 0 8px;"><strong>Entrega:</strong></p>
+          <div style="padding:28px;">
+            <p style="margin:0 0 18px; color:#d8d8d8; line-height:1.7;">
+              Oi, ${escapeHtml(order.customerName)}. Seu pagamento foi aprovado e o seu pedido da Flacalcinha foi recebido com sucesso.
+            </p>
+            <div style="background:#101010; border:1px solid #2b2b2b; border-radius:14px; padding:18px; margin-bottom:16px;">
+              <p style="margin:0 0 8px;"><strong>Pedido:</strong> ${escapeHtml(order.externalReference)}</p>
+              <p style="margin:0 0 8px;"><strong>Produto:</strong> ${escapeHtml(order.productName)}</p>
+              <p style="margin:0 0 8px;"><strong>Quantidade:</strong> ${escapeHtml(order.quantity)}</p>
+              <p style="margin:0 0 8px;"><strong>Forma de pagamento:</strong> ${escapeHtml(order.paymentMethod)}</p>
+              <p style="margin:0;"><strong>Total pago:</strong> ${formatMoney(order.total)}</p>
+            </div>
             <p style="margin:0; color:#d8d8d8; line-height:1.7;">
-              ${order.addressLine}, ${order.addressNumber}<br />
-              ${order.district} - ${order.city}/${order.state}<br />
-              CEP: ${order.postalCode}
+              Em breve voce recebera as proximas orientacoes sobre entrega. O calculo automatico de frete por CEP entra na proxima etapa da loja, mas seu pedido ja esta confirmado.
             </p>
           </div>
         </div>
       </div>
-    </div>
-  `;
-
-  return { subject, html };
+    `
+  };
 }
 
-async function sendEmail(order) {
+async function sendResendEmail({ to, subject, html, replyTo }) {
   if (!RESEND_API_KEY) {
     throw new Error("RESEND_API_KEY nao configurada");
   }
 
-  const email = buildEmail(order);
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -165,9 +265,10 @@ async function sendEmail(order) {
     },
     body: JSON.stringify({
       from: "Flacalcinha <onboarding@resend.dev>",
-      to: [NOTIFICATION_EMAIL],
-      subject: email.subject,
-      html: email.html
+      to: Array.isArray(to) ? to : [to],
+      subject,
+      html,
+      reply_to: replyTo
     })
   });
 
@@ -183,32 +284,58 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (PAYMENT_WEBHOOK_SECRET) {
-    const providedSecret =
-      getHeader(req, "x-webhook-secret") ||
-      getHeader(req, "authorization")?.replace(/^Bearer\s+/i, "");
+  const payload = parseJsonBody(req) || {};
+  const notificationType = String(payload.type || getQueryParams(req).get("type") || "").toLowerCase();
+  const notificationId = getNotificationId(req, payload);
 
-    if (providedSecret !== PAYMENT_WEBHOOK_SECRET) {
-      res.status(401).json({ ok: false, error: "Unauthorized" });
-      return;
-    }
-  }
-
-  const payload = parseJsonBody(req);
-  if (!payload) {
-    res.status(400).json({ ok: false, error: "Invalid JSON body" });
+  if (notificationType && notificationType !== "payment") {
+    res.status(200).json({ ok: true, ignored: true, reason: "Notification type ignored" });
     return;
   }
 
-  const order = extractOrder(payload);
-  if (!isPaidStatus(order.status)) {
-    res.status(200).json({ ok: true, ignored: true, reason: "Payment not marked as paid" });
+  if (!notificationId) {
+    res.status(200).json({ ok: true, ignored: true, reason: "Missing payment id" });
+    return;
+  }
+
+  if (!(await verifyWebhookSignature(req, notificationId))) {
+    res.status(401).json({ ok: false, error: "Unauthorized" });
     return;
   }
 
   try {
-    await sendEmail(order);
-    res.status(200).json({ ok: true, deliveredTo: NOTIFICATION_EMAIL });
+    const payment = await getPaymentDetails(notificationId);
+    const order = normalizePayment(payment);
+
+    if (order.status !== "approved") {
+      res.status(200).json({ ok: true, ignored: true, reason: `Payment status is ${order.status}` });
+      return;
+    }
+
+    const adminEmail = buildAdminEmail(order);
+    const customerEmail = buildCustomerEmail(order);
+
+    await sendResendEmail({
+      to: NOTIFICATION_EMAIL,
+      subject: adminEmail.subject,
+      html: adminEmail.html,
+      replyTo: order.customerEmail || undefined
+    });
+
+    if (order.customerEmail) {
+      await sendResendEmail({
+        to: order.customerEmail,
+        subject: customerEmail.subject,
+        html: customerEmail.html,
+        replyTo: NOTIFICATION_EMAIL
+      });
+    }
+
+    res.status(200).json({
+      ok: true,
+      deliveredTo: NOTIFICATION_EMAIL,
+      customerNotified: Boolean(order.customerEmail)
+    });
   } catch (error) {
     res.status(500).json({
       ok: false,

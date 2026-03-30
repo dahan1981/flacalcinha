@@ -672,7 +672,7 @@
     .payment-panel.active {
       display: block;
     }
-    .manual-payment-box {
+    .checkout-action-box {
       display: grid;
       gap: .85rem;
       margin-top: 1rem;
@@ -681,37 +681,75 @@
       border: 1px solid rgba(255,255,255,.09);
       background: rgba(255,255,255,.03);
     }
-    .manual-payment-box h4 {
+    .checkout-action-box h4 {
       margin: 0;
       font-size: 1rem;
       color: #fff3df;
     }
-    .manual-payment-box p,
-    .manual-payment-box small {
+    .checkout-action-box p,
+    .checkout-action-box small {
       margin: 0;
       color: rgba(255,255,255,.68);
       line-height: 1.6;
     }
-    .manual-payment-feedback {
+    .checkout-feedback {
       min-height: 1.25rem;
       font-size: .9rem;
       color: rgba(255,255,255,.72);
     }
-    .manual-payment-feedback.success { color: #9fe0a7; }
-    .manual-payment-feedback.error { color: #ffb3b3; }
-    .qr-placeholder {
+    .checkout-feedback.success { color: #9fe0a7; }
+    .checkout-feedback.error { color: #ffb3b3; }
+    .payment-status-banner {
+      display: none;
+      margin-bottom: 1rem;
+      padding: 1rem 1.1rem;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      color: rgba(250,250,250,.85);
+      line-height: 1.6;
+    }
+    .payment-status-banner.show {
+      display: block;
+    }
+    .payment-status-banner.success {
+      border-color: rgba(106, 211, 140, .4);
+      background: rgba(106, 211, 140, .08);
+      color: #dbffe5;
+    }
+    .payment-status-banner.pending {
+      border-color: rgba(212,168,67,.4);
+      background: rgba(212,168,67,.08);
+      color: #fff0c6;
+    }
+    .payment-status-banner.failure {
+      border-color: rgba(204,0,0,.4);
+      background: rgba(204,0,0,.08);
+      color: #ffd7d7;
+    }
+    .payment-placeholder {
       display: grid;
-      place-items: center;
-      min-height: 200px;
+      gap: .65rem;
+      min-height: 180px;
+      align-content: center;
       border-radius: 16px;
       border: 1px dashed rgba(255,255,255,.18);
       background: linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
-      color: rgba(250,250,250,.5);
-      text-align: center;
-      padding: 1rem;
-      margin-bottom: 1rem;
+      color: rgba(250,250,250,.72);
+      text-align: left;
+      padding: 1.2rem;
     }
-    .pix-code-box {
+    .payment-placeholder strong {
+      font-size: 1rem;
+      color: var(--white);
+    }
+    .payment-placeholder p {
+      margin: 0;
+      color: rgba(250,250,250,.66);
+      line-height: 1.7;
+    }
+    .payment-note-box {
+      margin-top: 1rem;
       padding: .9rem 1rem;
       border-radius: 12px;
       background: rgba(0,0,0,.28);
@@ -719,14 +757,6 @@
       font-size: .82rem;
       line-height: 1.7;
       color: rgba(250,250,250,.72);
-      word-break: break-all;
-    }
-    .copy-code {
-      margin-top: .9rem;
-    }
-    .payment-link.is-disabled {
-      opacity: .6;
-      pointer-events: none;
     }
 
     /* â”€â”€ FOOTER â”€â”€ */
@@ -883,7 +913,7 @@
       <div class="section-header">
         <div class="section-kicker">Compra guiada</div>
         <h2 class="section-title">Escolha seu leque e avance para o pagamento</h2>
-        <p class="section-copy">O valor unitário é de <strong>R$ 45,00</strong>. O frete entra no total final conforme o endereço informado. O Pix e o link do cartão ficam preparados para você preencher depois com os dados reais.</p>
+        <p class="section-copy">O valor unitário é de <strong>R$ 45,00</strong>. Agora o pagamento segue pelo Mercado Pago, com Pix e cartão no checkout oficial. O frete por CEP entra na próxima etapa da loja.</p>
       </div>
 
       <div class="checkout-layout">
@@ -991,41 +1021,47 @@
           <section class="step-card hidden-step" id="stepPayment">
             <div class="step-label">3</div>
             <h3>Escolha a forma de pagamento</h3>
-            <p class="step-desc">Selecione se o pagamento será por Pix ou cartão de crédito.</p>
+            <p class="step-desc">Escolha como prefere abrir o checkout oficial do Mercado Pago. Pix e cartão continuam disponíveis na plataforma.</p>
+
+            <div class="payment-status-banner" id="paymentStatusBanner"></div>
 
             <div class="payment-methods">
               <button type="button" class="payment-option active" data-payment="pix">
                 <strong>Pix</strong>
-                <span>Mostra QR Code e código cópia e cola para pagamento instantâneo.</span>
+                <span>Leva você ao Checkout Pro com Pix disponível para pagar na hora.</span>
               </button>
               <button type="button" class="payment-option" data-payment="card">
                 <strong>Cartão de crédito</strong>
-                <span>Direciona para o link de pagamento que você vai me enviar.</span>
+                <span>Leva você ao Checkout Pro com cartão de crédito disponível no mesmo fluxo.</span>
               </button>
             </div>
 
             <div class="payment-panel active" id="panelPix">
-              <div class="qr-placeholder">
-                <div>
-                  <strong>QR Code Pix</strong>
-                  <p class="muted-note">Assim que você me mandar o QR Code e o código cópia e cola, eu substituo este bloco pelo pagamento real.</p>
-                </div>
+              <div class="payment-placeholder">
+                <strong>Pix pelo Mercado Pago</strong>
+                <p>Você será levada para o ambiente oficial do Mercado Pago, com identificação do seu pedido e confirmação automática do pagamento.</p>
               </div>
-              <div class="pix-code-box" id="pixCode">PIX cópia e cola será inserido aqui.</div>
-              <button type="button" class="btn-main copy-code" id="copyPixCode">Copiar chave Pix</button>
+              <div class="payment-note-box">
+                O QR Code e o código Pix não ficam mais fixos no site. Cada pedido passa a ser aberto com rastreio próprio dentro do gateway.
+              </div>
             </div>
 
             <div class="payment-panel" id="panelCard">
-              <a href="#" class="btn-main payment-link is-disabled" id="cardPaymentLink" aria-disabled="true">Link de pagamento em configuração</a>
-              <p class="muted-note">Quando você me enviar o link do cartão, eu deixo este botão ativo e apontando para o checkout real.</p>
+              <div class="payment-placeholder">
+                <strong>Cartão de crédito pelo Mercado Pago</strong>
+                <p>O checkout oficial abre com pagamento por cartão disponível, mantendo o pedido vinculado ao nome, e-mail e endereço da cliente.</p>
+              </div>
+              <div class="payment-note-box">
+                O Mercado Pago cuida da parte sensível do pagamento e devolve o status do pedido para o site automaticamente.
+              </div>
             </div>
 
-            <div class="manual-payment-box">
-              <h4>Depois de pagar, avise a equipe</h4>
-              <p>Finalize no Pix ou no cartão e depois clique abaixo para mandar seu pedido para conferência manual.</p>
-              <button type="button" class="btn-main" id="confirmManualPayment">Já fiz o pagamento</button>
-              <div class="manual-payment-feedback" id="manualPaymentFeedback"></div>
-              <small>O aviso envia por e-mail seu nome, contato, endereço, produto, quantidade e forma de pagamento.</small>
+            <div class="checkout-action-box">
+              <h4>Fechar pedido com confirmação automática</h4>
+              <p>Ao abrir o checkout, o pedido vai com seus dados, produto e quantidade. Depois do pagamento aprovado, a equipe recebe o aviso por e-mail e você também recebe a confirmação.</p>
+              <button type="button" class="btn-main" id="startCheckout">Ir para o checkout do Mercado Pago</button>
+              <div class="checkout-feedback" id="checkoutFeedback"></div>
+              <small>Nesta etapa inicial, o frete por CEP ainda será integrado. Por enquanto, o pagamento cobre os leques e o pedido já fica preparado para a próxima fase da loja.</small>
             </div>
           </section>
         </div>
@@ -1110,6 +1146,7 @@
 
   <script>
     const unitPrice = 45;
+    const checkoutStorageKey = 'flacalcinha-checkout';
     const productButtons = document.querySelectorAll('.product-card');
     const paymentButtons = document.querySelectorAll('.payment-option');
     const quantitySelect = document.getElementById('quantity');
@@ -1128,6 +1165,7 @@
     const continueToAddress = document.getElementById('continueToAddress');
     const continueToAddressMobile = document.getElementById('continueToAddressMobile');
     const continueToPayment = document.getElementById('continueToPayment');
+    const startCheckoutButton = document.getElementById('startCheckout');
     const checkoutSection = document.getElementById('checkout');
     const stepAddress = document.getElementById('stepAddress');
     const stepPayment = document.getElementById('stepPayment');
@@ -1148,12 +1186,10 @@
     const buyerState = document.getElementById('buyerState');
     const buyerComplement = document.getElementById('buyerComplement');
     const shippingNotes = document.getElementById('shippingNotes');
-    const pixCode = document.getElementById('pixCode');
-    const copyPixCode = document.getElementById('copyPixCode');
     const panelPix = document.getElementById('panelPix');
     const panelCard = document.getElementById('panelCard');
-    const confirmManualPayment = document.getElementById('confirmManualPayment');
-    const manualPaymentFeedback = document.getElementById('manualPaymentFeedback');
+    const checkoutFeedback = document.getElementById('checkoutFeedback');
+    const paymentStatusBanner = document.getElementById('paymentStatusBanner');
 
     let selectedProduct = 'Leque Flacalcinha';
     let selectedPayment = 'pix';
@@ -1163,130 +1199,16 @@
       currency: 'BRL'
     }).format(value);
 
-    function updateSummary() {
+    function getQuantity() {
       let quantity = Number(quantitySelect.value);
       if (Number.isNaN(quantity) || quantity < 1) quantity = 1;
       if (quantity > 50) quantity = 50;
       quantitySelect.value = String(quantity);
-      const subtotal = quantity * unitPrice;
-      const city = buyerCity.value.trim();
-      const state = buyerState.value.trim().toUpperCase();
-      const cep = buyerCep.value.trim();
-
-      summaryProduct.textContent = selectedProduct;
-      summaryQuantity.textContent = String(quantity);
-      summarySubtotal.textContent = formatCurrency(subtotal);
-      summaryTotal.textContent = `${formatCurrency(subtotal)} + frete`;
-
-      if (city && state) {
-        summaryShipping.textContent = `Calcular para ${city}/${state}`;
-        shippingHelper.textContent = `Frete será fechado para entrega em ${city}/${state}${cep ? `, CEP ${cep}` : ''}.`;
-      } else if (cep) {
-        summaryShipping.textContent = `Calcular para CEP ${cep}`;
-        shippingHelper.textContent = 'CEP informado. Complete cidade e estado para fechar o frete.';
-      } else {
-        summaryShipping.textContent = 'A calcular';
-        shippingHelper.textContent = 'Informe o endereço para fechar o valor do frete e confirmar o pagamento.';
-      }
+      return quantity;
     }
 
-    function scrollToSection(section) {
-      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    productButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        productButtons.forEach(item => item.classList.remove('active'));
-        button.classList.add('active');
-        selectedProduct = button.dataset.product;
-        updateSummary();
-      });
-    });
-
-    paymentButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        paymentButtons.forEach(item => item.classList.remove('active'));
-        button.classList.add('active');
-        selectedPayment = button.dataset.payment;
-        panelPix.classList.toggle('active', selectedPayment === 'pix');
-        panelCard.classList.toggle('active', selectedPayment === 'card');
-      });
-    });
-
-    function openLeadModal() {
-      leadFormContent.style.display = "block";
-      leadSuccessMessage.style.display = "none";
-      submitLeadButton.disabled = false;
-      submitLeadButton.textContent = "Entrar na fila de espera";
-      modalOverlay.classList.add("open");
-      document.body.style.overflow = "hidden";
-    }
-
-    function closeLeadModal() {
-      modalOverlay.classList.remove("open");
-      document.body.style.overflow = "";
-    }
-
-    openCheckoutButton.addEventListener('click', event => {
-      event.preventDefault();
-      scrollToSection(checkoutSection);
-    });
-
-    openLeadButton.addEventListener('click', event => {
-      event.preventDefault();
-      openLeadModal();
-    });
-
-    closeModalButton.addEventListener("click", closeLeadModal);
-    modalOverlay.addEventListener("click", event => {
-      if (event.target === modalOverlay) {
-        closeLeadModal();
-      }
-    });
-
-    function openAddressStep() {
-      stepAddress.classList.remove('hidden-step');
-      scrollToSection(stepAddress);
-    }
-
-    continueToAddress.addEventListener('click', openAddressStep);
-    continueToAddressMobile.addEventListener('click', openAddressStep);
-
-    continueToPayment.addEventListener('click', () => {
-      stepPayment.classList.remove('hidden-step');
-      scrollToSection(stepPayment);
-    });
-
-    decreaseQuantity.addEventListener('click', () => {
-      quantitySelect.value = String(Math.max(1, Number(quantitySelect.value || 1) - 1));
-      updateSummary();
-    });
-
-    increaseQuantity.addEventListener('click', () => {
-      quantitySelect.value = String(Math.min(50, Number(quantitySelect.value || 1) + 1));
-      updateSummary();
-    });
-
-    quantitySelect.addEventListener('input', updateSummary);
-    quantitySelect.addEventListener('change', updateSummary);
-    buyerCep.addEventListener('input', updateSummary);
-    buyerCity.addEventListener('input', updateSummary);
-    buyerState.addEventListener('input', updateSummary);
-
-    copyPixCode.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(pixCode.textContent.trim());
-        copyPixCode.textContent = 'Pix copiado';
-        setTimeout(() => {
-          copyPixCode.textContent = 'Copiar chave Pix';
-        }, 1800);
-      } catch (error) {
-          copyPixCode.textContent = 'Não foi possível copiar';
-      }
-    });
-
-    function buildManualPaymentPayload() {
-      const quantity = Math.max(1, Math.min(50, Number(quantitySelect.value || 1)));
+    function buildCheckoutPayload() {
+      const quantity = getQuantity();
       const subtotal = quantity * unitPrice;
 
       return {
@@ -1308,67 +1230,301 @@
         order: {
           productName: selectedProduct,
           quantity,
-          unitPrice: unitPrice,
+          unitPrice,
           subtotal,
-          shippingLabel: summaryShipping.textContent.trim(),
-          totalLabel: summaryTotal.textContent.trim(),
+          shippingLabel: 'Frete por CEP em integração',
+          totalLabel: formatCurrency(subtotal),
           paymentMethod: selectedPayment === 'card' ? 'Cartão de crédito' : 'Pix'
-        }
+        },
+        preferredPaymentMethod: selectedPayment
       };
     }
 
-    function validateManualPaymentPayload(payload) {
+    function validateCheckoutPayload(payload) {
       if (!payload.customer.name || !payload.customer.email || !payload.customer.phone) {
-        return 'Preencha nome, email e numero antes de avisar o pagamento.';
+        return 'Preencha nome, e-mail e número antes de ir para o pagamento.';
       }
 
-      if (!payload.address.cep || !payload.address.street || !payload.address.number || !payload.address.city || !payload.address.state) {
-        return 'Preencha os dados principais do endereço antes de enviar o aviso.';
+      if (!payload.address.cep || !payload.address.street || !payload.address.number || !payload.address.district || !payload.address.city || !payload.address.state) {
+        return 'Preencha CEP, rua, número, bairro, cidade e estado antes de gerar o checkout.';
       }
 
       return '';
     }
 
-    confirmManualPayment.addEventListener('click', async () => {
-      const payload = buildManualPaymentPayload();
-      const validationError = validateManualPaymentPayload(payload);
+    function setCheckoutFeedback(message, type = '') {
+      checkoutFeedback.textContent = message;
+      checkoutFeedback.className = `checkout-feedback${type ? ` ${type}` : ''}`;
+    }
+
+    function setPaymentBanner(message, type) {
+      paymentStatusBanner.textContent = message;
+      paymentStatusBanner.className = `payment-status-banner show ${type}`;
+    }
+
+    function clearPaymentBanner() {
+      paymentStatusBanner.textContent = '';
+      paymentStatusBanner.className = 'payment-status-banner';
+    }
+
+    function updateSummary() {
+      const quantity = getQuantity();
+      const subtotal = quantity * unitPrice;
+      const hasMainAddress = [
+        buyerCep.value.trim(),
+        buyerStreet.value.trim(),
+        buyerNumber.value.trim(),
+        buyerDistrict.value.trim(),
+        buyerCity.value.trim(),
+        buyerState.value.trim()
+      ].every(Boolean);
+
+      summaryProduct.textContent = selectedProduct;
+      summaryQuantity.textContent = String(quantity);
+      summarySubtotal.textContent = formatCurrency(subtotal);
+      summaryShipping.textContent = 'Em breve por CEP';
+      summaryTotal.textContent = formatCurrency(subtotal);
+
+      if (hasMainAddress) {
+        shippingHelper.textContent = 'Seus dados já estão prontos. O cálculo automático de frete por CEP entra na próxima etapa; por agora o checkout libera o pagamento dos leques.';
+      } else {
+        shippingHelper.textContent = 'Preencha seus dados para gerar o checkout com o pedido correto. O frete automático por CEP entra na próxima etapa da loja.';
+      }
+    }
+
+    function updatePaymentPanels() {
+      panelPix.classList.toggle('active', selectedPayment === 'pix');
+      panelCard.classList.toggle('active', selectedPayment === 'card');
+      startCheckoutButton.textContent = selectedPayment === 'card'
+        ? 'Ir para o checkout do Mercado Pago com cartão'
+        : 'Ir para o checkout do Mercado Pago com Pix';
+    }
+
+    function scrollToSection(section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function openAddressStep() {
+      stepAddress.classList.remove('hidden-step');
+      scrollToSection(stepAddress);
+    }
+
+    function openPaymentStep() {
+      stepAddress.classList.remove('hidden-step');
+      stepPayment.classList.remove('hidden-step');
+      scrollToSection(stepPayment);
+    }
+
+    function saveCheckoutState() {
+      const state = {
+        selectedProduct,
+        selectedPayment,
+        quantity: getQuantity(),
+        customer: {
+          name: buyerName.value,
+          email: buyerEmail.value,
+          phone: buyerPhone.value
+        },
+        address: {
+          cep: buyerCep.value,
+          street: buyerStreet.value,
+          number: buyerNumber.value,
+          district: buyerDistrict.value,
+          city: buyerCity.value,
+          state: buyerState.value,
+          complement: buyerComplement.value,
+          notes: shippingNotes.value
+        }
+      };
+
+      sessionStorage.setItem(checkoutStorageKey, JSON.stringify(state));
+    }
+
+    function restoreCheckoutState() {
+      const raw = sessionStorage.getItem(checkoutStorageKey);
+      if (!raw) return;
+
+      try {
+        const state = JSON.parse(raw);
+        if (state.selectedProduct) {
+          selectedProduct = state.selectedProduct;
+          productButtons.forEach(button => {
+            button.classList.toggle('active', button.dataset.product === selectedProduct);
+          });
+        }
+
+        if (state.selectedPayment) {
+          selectedPayment = state.selectedPayment;
+          paymentButtons.forEach(button => {
+            button.classList.toggle('active', button.dataset.payment === selectedPayment);
+          });
+        }
+
+        if (state.quantity) {
+          quantitySelect.value = String(Math.max(1, Math.min(50, Number(state.quantity))));
+        }
+
+        buyerName.value = state.customer?.name || '';
+        buyerEmail.value = state.customer?.email || '';
+        buyerPhone.value = state.customer?.phone || '';
+        buyerCep.value = state.address?.cep || '';
+        buyerStreet.value = state.address?.street || '';
+        buyerNumber.value = state.address?.number || '';
+        buyerDistrict.value = state.address?.district || '';
+        buyerCity.value = state.address?.city || '';
+        buyerState.value = state.address?.state || '';
+        buyerComplement.value = state.address?.complement || '';
+        shippingNotes.value = state.address?.notes || '';
+      } catch (error) {
+        sessionStorage.removeItem(checkoutStorageKey);
+      }
+    }
+
+    function handlePaymentReturn() {
+      const params = new URLSearchParams(window.location.search);
+      const checkoutStatus = params.get('checkout');
+      const paymentStatus = params.get('status') || params.get('collection_status');
+
+      const normalizedStatus = (checkoutStatus || paymentStatus || '').toLowerCase();
+      if (!normalizedStatus) return;
+
+      openPaymentStep();
+
+      if (normalizedStatus === 'approved') {
+        setPaymentBanner('Pagamento aprovado. Seu pedido foi confirmado e os e-mails de confirmação estão a caminho.', 'success');
+        sessionStorage.removeItem(checkoutStorageKey);
+      } else if (normalizedStatus === 'pending' || normalizedStatus === 'in_process') {
+        setPaymentBanner('Seu pagamento está pendente. Assim que o Mercado Pago confirmar, o pedido será notificado automaticamente.', 'pending');
+      } else {
+        setPaymentBanner('O pagamento não foi concluído. Você pode revisar os dados e tentar novamente pelo checkout do Mercado Pago.', 'failure');
+      }
+    }
+
+    productButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        productButtons.forEach(item => item.classList.remove('active'));
+        button.classList.add('active');
+        selectedProduct = button.dataset.product;
+        updateSummary();
+        saveCheckoutState();
+      });
+    });
+
+    paymentButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        paymentButtons.forEach(item => item.classList.remove('active'));
+        button.classList.add('active');
+        selectedPayment = button.dataset.payment;
+        updatePaymentPanels();
+        saveCheckoutState();
+      });
+    });
+
+    function openLeadModal() {
+      leadFormContent.style.display = 'block';
+      leadSuccessMessage.style.display = 'none';
+      submitLeadButton.disabled = false;
+      submitLeadButton.textContent = 'Entrar na fila de espera';
+      modalOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLeadModal() {
+      modalOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    openCheckoutButton.addEventListener('click', event => {
+      event.preventDefault();
+      scrollToSection(checkoutSection);
+    });
+
+    openLeadButton.addEventListener('click', event => {
+      event.preventDefault();
+      openLeadModal();
+    });
+
+    closeModalButton.addEventListener('click', closeLeadModal);
+    modalOverlay.addEventListener('click', event => {
+      if (event.target === modalOverlay) {
+        closeLeadModal();
+      }
+    });
+
+    continueToAddress.addEventListener('click', openAddressStep);
+    continueToAddressMobile.addEventListener('click', openAddressStep);
+    continueToPayment.addEventListener('click', openPaymentStep);
+
+    decreaseQuantity.addEventListener('click', () => {
+      quantitySelect.value = String(Math.max(1, getQuantity() - 1));
+      updateSummary();
+      saveCheckoutState();
+    });
+
+    increaseQuantity.addEventListener('click', () => {
+      quantitySelect.value = String(Math.min(50, getQuantity() + 1));
+      updateSummary();
+      saveCheckoutState();
+    });
+
+    [
+      quantitySelect,
+      buyerName,
+      buyerEmail,
+      buyerPhone,
+      buyerCep,
+      buyerStreet,
+      buyerNumber,
+      buyerDistrict,
+      buyerCity,
+      buyerState,
+      buyerComplement,
+      shippingNotes
+    ].forEach(field => {
+      field.addEventListener('input', () => {
+        updateSummary();
+        saveCheckoutState();
+      });
+      field.addEventListener('change', saveCheckoutState);
+    });
+
+    startCheckoutButton.addEventListener('click', async () => {
+      const payload = buildCheckoutPayload();
+      const validationError = validateCheckoutPayload(payload);
 
       if (validationError) {
-        manualPaymentFeedback.textContent = validationError;
-        manualPaymentFeedback.className = 'manual-payment-feedback error';
+        setCheckoutFeedback(validationError, 'error');
+        clearPaymentBanner();
         return;
       }
 
-      confirmManualPayment.disabled = true;
-      confirmManualPayment.textContent = 'Enviando aviso...';
-      manualPaymentFeedback.textContent = '';
-      manualPaymentFeedback.className = 'manual-payment-feedback';
+      saveCheckoutState();
+      setCheckoutFeedback('', '');
+      clearPaymentBanner();
+      startCheckoutButton.disabled = true;
+      startCheckoutButton.textContent = 'Gerando checkout...';
 
       try {
-        const response = await fetch('/api/manual-payment-notify', {
+        const response = await fetch('/api/create-payment-preference', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
 
         const result = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-          throw new Error(result.error || 'Não foi possível registrar o aviso.');
+        if (!response.ok || !result.checkoutUrl) {
+          throw new Error(result.error || 'Não foi possível abrir o checkout agora.');
         }
 
-        manualPaymentFeedback.textContent = 'Aviso enviado. Agora a equipe vai conferir o pagamento e seguir com o pedido.';
-        manualPaymentFeedback.className = 'manual-payment-feedback success';
+        window.location.href = result.checkoutUrl;
       } catch (error) {
-        manualPaymentFeedback.textContent = error.message || 'Falha ao enviar aviso de pagamento.';
-        manualPaymentFeedback.className = 'manual-payment-feedback error';
-      } finally {
-        confirmManualPayment.disabled = false;
-        confirmManualPayment.textContent = 'Já fiz o pagamento';
+        setCheckoutFeedback(error.message || 'Falha ao iniciar o checkout.', 'error');
+        startCheckoutButton.disabled = false;
+        updatePaymentPanels();
       }
     });
 
-    submitLeadButton.addEventListener("click", async () => {
+    submitLeadButton.addEventListener('click', async () => {
       const payload = {
         name: leadNameInput.value.trim(),
         email: leadEmailInput.value.trim(),
@@ -1383,28 +1539,31 @@
       }
 
       submitLeadButton.disabled = true;
-      submitLeadButton.textContent = "Enviando...";
+      submitLeadButton.textContent = 'Enviando...';
 
       try {
-        const response = await fetch("/api/lead-waitlist", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const response = await fetch('/api/lead-waitlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
-          throw new Error("Falha ao enviar lead");
+          throw new Error('Falha ao enviar lead');
         }
 
-        leadFormContent.style.display = "none";
-        leadSuccessMessage.style.display = "block";
+        leadFormContent.style.display = 'none';
+        leadSuccessMessage.style.display = 'block';
       } catch (error) {
         submitLeadButton.disabled = false;
-        submitLeadButton.textContent = "Entrar na fila de espera";
+        submitLeadButton.textContent = 'Entrar na fila de espera';
       }
     });
 
+    restoreCheckoutState();
     updateSummary();
+    updatePaymentPanels();
+    handlePaymentReturn();
   </script>
 
 </body>
