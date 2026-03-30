@@ -92,6 +92,23 @@ function buildPreference(body, req) {
   const externalReference = buildExternalReference();
   const baseUrl = getBaseUrl(req);
   const { name, surname } = splitName(customer.name);
+  const paymentMethods =
+    preferredPaymentMethod === "pix"
+      ? {
+          excluded_payment_types: [
+            { id: "credit_card" },
+            { id: "debit_card" },
+            { id: "ticket" }
+          ],
+          installments: 1
+        }
+      : {
+          excluded_payment_types: [
+            { id: "bank_transfer" },
+            { id: "ticket" }
+          ],
+          installments: 12
+        };
 
   return {
     preference: {
@@ -127,9 +144,7 @@ function buildPreference(body, req) {
       auto_return: "approved",
       external_reference: externalReference,
       statement_descriptor: "FLACALCINHA",
-      payment_methods: {
-        installments: 12
-      },
+      payment_methods: paymentMethods,
       metadata: {
         customer_name: sanitizeString(customer.name),
         product_name: sanitizeString(order.productName),
