@@ -1547,7 +1547,14 @@
           throw new Error(result.error || 'Não foi possível abrir o checkout agora.');
         }
 
-        window.location.href = result.checkoutUrl;
+        const checkoutWindow = window.open(result.checkoutUrl, '_blank', 'noopener,noreferrer');
+        if (!checkoutWindow) {
+          throw new Error('O navegador bloqueou a abertura do Mercado Pago. Libere pop-ups e tente novamente.');
+        }
+
+        setCheckoutFeedback('O checkout do Mercado Pago foi aberto em outra aba.', 'success');
+        startCheckoutButton.disabled = false;
+        updatePaymentPanels();
       } catch (error) {
         setCheckoutFeedback(error.message || 'Falha ao iniciar o checkout.', 'error');
         startCheckoutButton.disabled = false;
