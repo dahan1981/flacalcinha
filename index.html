@@ -1405,6 +1405,28 @@
       return '';
     }
 
+    function mapCheckoutApiError(message) {
+      const normalized = String(message || '').trim().toLowerCase();
+
+      if (normalized === 'missing customer fields') {
+        return 'Preencha nome, e-mail e número antes de gerar o checkout.';
+      }
+
+      if (normalized === 'missing address fields') {
+        return 'Preencha CEP, rua, número, bairro, cidade e estado antes de gerar o checkout.';
+      }
+
+      if (normalized === 'missing order fields') {
+        return 'Não foi possível montar o pedido. Atualize a página e tente novamente.';
+      }
+
+      if (normalized === 'missing privacy consents') {
+        return 'Marque os dois consentimentos de privacidade e e-mail antes de abrir o checkout.';
+      }
+
+      return message || 'Não foi possível abrir o checkout agora.';
+    }
+
     function setCheckoutFeedback(message, type = '') {
       checkoutFeedback.textContent = message;
       checkoutFeedback.className = `checkout-feedback${type ? ` ${type}` : ''}`;
@@ -1621,6 +1643,7 @@
       if (validationError) {
         setCheckoutFeedback(validationError, 'error');
         clearPaymentBanner();
+        checkoutPrivacyConsent.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
 
@@ -1639,7 +1662,7 @@
 
         const result = await response.json().catch(() => ({}));
         if (!response.ok || !result.checkoutUrl) {
-          throw new Error(result.error || 'Não foi possível abrir o checkout agora.');
+          throw new Error(mapCheckoutApiError(result.error));
         }
 
         const checkoutWindow = window.open(result.checkoutUrl, '_blank', 'noopener,noreferrer');

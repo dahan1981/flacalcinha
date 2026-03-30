@@ -58,19 +58,19 @@ function validatePayload(payload) {
   const privacy = payload?.privacy || {};
 
   if (!customer.name || !customer.email || !customer.phone) {
-    return "Missing customer fields";
+    return "Preencha nome, e-mail e numero antes de gerar o checkout.";
   }
 
   if (!address.cep || !address.street || !address.number || !address.district || !address.city || !address.state) {
-    return "Missing address fields";
+    return "Preencha CEP, rua, numero, bairro, cidade e estado antes de gerar o checkout.";
   }
 
   if (!order.productName || !order.quantity || !order.unitPrice) {
-    return "Missing order fields";
+    return "Nao foi possivel montar o pedido.";
   }
 
   if (!privacy.checkoutPrivacyConsent || !privacy.checkoutEmailConsent) {
-    return "Missing privacy consents";
+    return "Marque os dois consentimentos de privacidade e e-mail antes de abrir o checkout.";
   }
 
   return "";
