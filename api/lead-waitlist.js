@@ -1,5 +1,9 @@
-const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || "flacalcinhasrn@gmail.com";
+const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
+
+function setNoStore(res) {
+  res.setHeader("Cache-Control", "no-store, max-age=0");
+}
 
 function parseJsonBody(req) {
   if (typeof req.body === "string") {
@@ -27,8 +31,8 @@ function escapeHtml(value) {
 }
 
 async function sendEmail(payload) {
-  if (!RESEND_API_KEY) {
-    throw new Error("RESEND_API_KEY nao configurada");
+  if (!RESEND_API_KEY || !NOTIFICATION_EMAIL) {
+    throw new Error("Email environment not configured");
   }
 
   const name = escapeHtml(payload.name);
@@ -75,6 +79,8 @@ async function sendEmail(payload) {
 }
 
 export default async function handler(req, res) {
+  setNoStore(res);
+
   if (req.method !== "POST") {
     res.status(405).json({ ok: false, error: "Method not allowed" });
     return;
@@ -89,15 +95,16 @@ export default async function handler(req, res) {
   const name = String(payload.name || "").trim();
   const email = String(payload.email || "").trim();
   const phone = String(payload.phone || "").trim();
+  const privacyConsent = Boolean(payload.privacyConsent);
 
-  if (!name || !email || !phone) {
+  if (!name || !email || !phone || !privacyConsent) {
     res.status(400).json({ ok: false, error: "Missing required fields" });
     return;
   }
 
   try {
     await sendEmail({ name, email, phone });
-    res.status(200).json({ ok: true, deliveredTo: NOTIFICATION_EMAIL });
+    res.status(200).json({ ok: true });
   } catch (error) {
     res.status(500).json({
       ok: false,

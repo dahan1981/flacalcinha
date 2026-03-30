@@ -24,6 +24,10 @@ function parseJsonBody(req) {
   return null;
 }
 
+function setNoStore(res) {
+  res.setHeader("Cache-Control", "no-store, max-age=0");
+}
+
 function getBaseUrl(req) {
   const forwardedProto = getHeader(req, "x-forwarded-proto") || "https";
   const forwardedHost = getHeader(req, "x-forwarded-host") || getHeader(req, "host");
@@ -51,6 +55,7 @@ function validatePayload(payload) {
   const customer = payload?.customer || {};
   const address = payload?.address || {};
   const order = payload?.order || {};
+  const privacy = payload?.privacy || {};
 
   if (!customer.name || !customer.email || !customer.phone) {
     return "Missing customer fields";
@@ -62,6 +67,10 @@ function validatePayload(payload) {
 
   if (!order.productName || !order.quantity || !order.unitPrice) {
     return "Missing order fields";
+  }
+
+  if (!privacy.checkoutPrivacyConsent || !privacy.checkoutEmailConsent) {
+    return "Missing privacy consents";
   }
 
   return "";
@@ -123,19 +132,12 @@ function buildPreference(body, req) {
       },
       metadata: {
         customer_name: sanitizeString(customer.name),
-        customer_email: sanitizeString(customer.email),
-        customer_phone: sanitizeString(customer.phone),
         product_name: sanitizeString(order.productName),
         quantity: String(quantity),
         subtotal: String(subtotal),
         address_cep: sanitizeString(address.cep),
-        address_street: sanitizeString(address.street),
-        address_number: sanitizeString(address.number),
-        address_district: sanitizeString(address.district),
         address_city: sanitizeString(address.city),
         address_state: sanitizeString(address.state).toUpperCase(),
-        address_complement: sanitizeString(address.complement),
-        shipping_notes: sanitizeString(address.notes),
         shipping_status: "pending_shipping_integration",
         preferred_payment_method: preferredPaymentMethod
       }
@@ -145,6 +147,8 @@ function buildPreference(body, req) {
 }
 
 export default async function handler(req, res) {
+  setNoStore(res);
+
   if (req.method !== "POST") {
     res.status(405).json({ ok: false, error: "Method not allowed" });
     return;

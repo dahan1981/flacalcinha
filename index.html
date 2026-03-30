@@ -382,6 +382,33 @@
     .form-group textarea:focus { border-color: var(--red); }
     .form-group textarea::placeholder { color: rgba(255,255,255,.25); }
     .form-group textarea { min-height: 112px; resize: vertical; }
+    .consent-box {
+      display: grid;
+      gap: .75rem;
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.025);
+    }
+    .consent-item {
+      display: flex;
+      align-items: flex-start;
+      gap: .65rem;
+      color: rgba(250,250,250,.72);
+      font-size: .88rem;
+      line-height: 1.6;
+    }
+    .consent-item input {
+      margin-top: .2rem;
+      accent-color: var(--red);
+      flex: 0 0 auto;
+    }
+    .consent-copy {
+      color: rgba(250,250,250,.54);
+      font-size: .77rem;
+      line-height: 1.6;
+    }
     .quantity-control {
       display: flex;
       align-items: center;
@@ -1012,6 +1039,18 @@
               <textarea id="shippingNotes" placeholder="Se houver alguma observação importante para entrega ou pagamento, deixe aqui."></textarea>
             </div>
 
+            <div class="consent-box">
+              <label class="consent-item" for="checkoutPrivacyConsent">
+                <input type="checkbox" id="checkoutPrivacyConsent" />
+                <span>Autorizo o uso dos meus dados exclusivamente para processar meu pedido, contato operacional e confirmação de pagamento.</span>
+              </label>
+              <label class="consent-item" for="checkoutEmailConsent">
+                <input type="checkbox" id="checkoutEmailConsent" />
+                <span>Autorizo o envio de e-mails transacionais sobre este pedido.</span>
+              </label>
+              <p class="consent-copy">Seguimos minimização de dados: o site não salva seus dados sensíveis no navegador e usa apenas o necessário para processar a compra conforme a LGPD.</p>
+            </div>
+
             <button type="button" class="btn-main" id="continueToPayment">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               Continuar para pagamento
@@ -1132,6 +1171,14 @@
           <input type="tel" id="whats" placeholder="(21) 99999-9999" autocomplete="tel" />
         </div>
 
+        <div class="consent-box">
+          <label class="consent-item" for="leadPrivacyConsent">
+            <input type="checkbox" id="leadPrivacyConsent" />
+            <span>Autorizo o uso de nome, e-mail e número apenas para contato sobre lançamento e disponibilidade da Flacalcinha.</span>
+          </label>
+          <p class="consent-copy">Você pode pedir exclusão ou parar os contatos a qualquer momento. Nada aqui é usado para finalidade diferente da fila de espera.</p>
+        </div>
+
         <button class="btn-form" id="submitForm">Entrar na fila de espera</button>
         <p class="modal-fine">Sem spam. Apenas aviso de lançamento e novidades reais.</p>
       </div>
@@ -1162,6 +1209,7 @@
     const leadNameInput = document.getElementById('nome');
     const leadEmailInput = document.getElementById('email');
     const leadPhoneInput = document.getElementById('whats');
+    const leadPrivacyConsent = document.getElementById('leadPrivacyConsent');
     const continueToAddress = document.getElementById('continueToAddress');
     const continueToAddressMobile = document.getElementById('continueToAddressMobile');
     const continueToPayment = document.getElementById('continueToPayment');
@@ -1186,6 +1234,8 @@
     const buyerState = document.getElementById('buyerState');
     const buyerComplement = document.getElementById('buyerComplement');
     const shippingNotes = document.getElementById('shippingNotes');
+    const checkoutPrivacyConsent = document.getElementById('checkoutPrivacyConsent');
+    const checkoutEmailConsent = document.getElementById('checkoutEmailConsent');
     const panelPix = document.getElementById('panelPix');
     const panelCard = document.getElementById('panelCard');
     const checkoutFeedback = document.getElementById('checkoutFeedback');
@@ -1236,7 +1286,11 @@
           totalLabel: formatCurrency(subtotal),
           paymentMethod: selectedPayment === 'card' ? 'Cartão de crédito' : 'Pix'
         },
-        preferredPaymentMethod: selectedPayment
+        preferredPaymentMethod: selectedPayment,
+        privacy: {
+          checkoutPrivacyConsent: checkoutPrivacyConsent.checked,
+          checkoutEmailConsent: checkoutEmailConsent.checked
+        }
       };
     }
 
@@ -1247,6 +1301,10 @@
 
       if (!payload.address.cep || !payload.address.street || !payload.address.number || !payload.address.district || !payload.address.city || !payload.address.state) {
         return 'Preencha CEP, rua, número, bairro, cidade e estado antes de gerar o checkout.';
+      }
+
+      if (!payload.privacy.checkoutPrivacyConsent || !payload.privacy.checkoutEmailConsent) {
+        return 'Você precisa autorizar o tratamento dos dados do pedido e os e-mails transacionais para continuar.';
       }
 
       return '';
@@ -1319,22 +1377,7 @@
       const state = {
         selectedProduct,
         selectedPayment,
-        quantity: getQuantity(),
-        customer: {
-          name: buyerName.value,
-          email: buyerEmail.value,
-          phone: buyerPhone.value
-        },
-        address: {
-          cep: buyerCep.value,
-          street: buyerStreet.value,
-          number: buyerNumber.value,
-          district: buyerDistrict.value,
-          city: buyerCity.value,
-          state: buyerState.value,
-          complement: buyerComplement.value,
-          notes: shippingNotes.value
-        }
+        quantity: getQuantity()
       };
 
       sessionStorage.setItem(checkoutStorageKey, JSON.stringify(state));
@@ -1363,18 +1406,6 @@
         if (state.quantity) {
           quantitySelect.value = String(Math.max(1, Math.min(50, Number(state.quantity))));
         }
-
-        buyerName.value = state.customer?.name || '';
-        buyerEmail.value = state.customer?.email || '';
-        buyerPhone.value = state.customer?.phone || '';
-        buyerCep.value = state.address?.cep || '';
-        buyerStreet.value = state.address?.street || '';
-        buyerNumber.value = state.address?.number || '';
-        buyerDistrict.value = state.address?.district || '';
-        buyerCity.value = state.address?.city || '';
-        buyerState.value = state.address?.state || '';
-        buyerComplement.value = state.address?.complement || '';
-        shippingNotes.value = state.address?.notes || '';
       } catch (error) {
         sessionStorage.removeItem(checkoutStorageKey);
       }
@@ -1528,13 +1559,15 @@
       const payload = {
         name: leadNameInput.value.trim(),
         email: leadEmailInput.value.trim(),
-        phone: leadPhoneInput.value.trim()
+        phone: leadPhoneInput.value.trim(),
+        privacyConsent: leadPrivacyConsent.checked
       };
 
-      if (!payload.name || !payload.email || !payload.phone) {
+      if (!payload.name || !payload.email || !payload.phone || !payload.privacyConsent) {
         if (!payload.name) leadNameInput.focus();
         else if (!payload.email) leadEmailInput.focus();
-        else leadPhoneInput.focus();
+        else if (!payload.phone) leadPhoneInput.focus();
+        else leadPrivacyConsent.focus();
         return;
       }
 

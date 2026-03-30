@@ -3,7 +3,7 @@ Pagamento confirmado por e-mail
 O projeto agora tem um webhook em `api/payment-webhook.js`.
 
 Objetivo:
-- quando o Mercado Pago confirmar um pagamento aprovado, o Vercel envia e-mail para `flacalcinhasrn@gmail.com`
+- quando o Mercado Pago confirmar um pagamento aprovado, o Vercel envia e-mail para o endereço definido em ambiente
 - a cliente tambem recebe um e-mail de confirmacao do pedido
 
 Variaveis de ambiente no Vercel:
@@ -13,7 +13,7 @@ Variaveis de ambiente no Vercel:
 - `NOTIFICATION_EMAIL`
 
 Valor recomendado:
-- `NOTIFICATION_EMAIL=flacalcinhasrn@gmail.com`
+- definir `NOTIFICATION_EMAIL` apenas no ambiente da Vercel
 
 URL do webhook:
 - `/api/payment-webhook`
@@ -33,3 +33,4 @@ Fluxo:
 
 Observacao:
 - o frete por CEP ainda nao esta integrado nesta versao
+- o codigo nao deve manter e-mails operacionais nem credenciais hardcoded

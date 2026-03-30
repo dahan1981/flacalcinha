@@ -1,7 +1,11 @@
-const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || "flacalcinhasrn@gmail.com";
+const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
 const MP_WEBHOOK_SECRET = process.env.MP_WEBHOOK_SECRET;
+
+function setNoStore(res) {
+  res.setHeader("Cache-Control", "no-store, max-age=0");
+}
 
 function getHeader(req, name) {
   const value = req.headers?.[name] ?? req.headers?.[name.toLowerCase()];
@@ -154,9 +158,8 @@ function normalizePayment(payment) {
           ? "Cartao de credito"
           : payment.payment_method_id || payment.payment_type_id || "Mercado Pago",
     customerName: metadata.customer_name || payment.payer?.first_name || "Cliente",
-    customerEmail: metadata.customer_email || payment.payer?.email || "",
+    customerEmail: payment.payer?.email || "",
     customerPhone:
-      metadata.customer_phone ||
       payment.payer?.phone?.number ||
       payment.additional_info?.payer?.phone?.number ||
       "",
@@ -167,13 +170,13 @@ function normalizePayment(payment) {
     total: Number(payment.transaction_amount || metadata.subtotal || 0),
     address: {
       cep: metadata.address_cep || "Nao informado",
-      street: metadata.address_street || "Endereco nao informado",
-      number: metadata.address_number || "s/n",
-      district: metadata.address_district || "Nao informado",
+      street: "Coletado no checkout",
+      number: "-",
+      district: "-",
       city: metadata.address_city || "Nao informado",
       state: metadata.address_state || "Nao informado",
-      complement: metadata.address_complement || "",
-      notes: metadata.shipping_notes || ""
+      complement: "",
+      notes: ""
     }
   };
 }
@@ -253,8 +256,8 @@ function buildCustomerEmail(order) {
 }
 
 async function sendResendEmail({ to, subject, html, replyTo }) {
-  if (!RESEND_API_KEY) {
-    throw new Error("RESEND_API_KEY nao configurada");
+  if (!RESEND_API_KEY || !NOTIFICATION_EMAIL) {
+    throw new Error("Email environment not configured");
   }
 
   const response = await fetch("https://api.resend.com/emails", {
@@ -279,6 +282,8 @@ async function sendResendEmail({ to, subject, html, replyTo }) {
 }
 
 export default async function handler(req, res) {
+  setNoStore(res);
+
   if (req.method !== "POST") {
     res.status(405).json({ ok: false, error: "Method not allowed" });
     return;
@@ -333,7 +338,6 @@ export default async function handler(req, res) {
 
     res.status(200).json({
       ok: true,
-      deliveredTo: NOTIFICATION_EMAIL,
       customerNotified: Boolean(order.customerEmail)
     });
   } catch (error) {
