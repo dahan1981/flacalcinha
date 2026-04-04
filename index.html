@@ -1897,7 +1897,7 @@
       openPaymentStep();
 
       if (normalizedStatus === 'approved') {
-        setPaymentBanner('Pagamento aprovado. Seu pedido foi confirmado e os e-mails de confirmação estão a caminho.', 'success');
+        setPaymentBanner('Pagamento aprovado. Seu pedido foi confirmado e os e-mails de confirmação estão a caminho. Verifique também sua caixa de spam.', 'success');
         sessionStorage.removeItem(checkoutStorageKey);
       } else if (normalizedStatus === 'pending' || normalizedStatus === 'in_process') {
         setPaymentBanner('Seu pagamento está pendente. Assim que o Mercado Pago confirmar, o pedido será notificado automaticamente.', 'pending');
