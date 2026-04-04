@@ -251,6 +251,14 @@ function buildCustomerEmail(order) {
             <p style="margin:0; color:#d8d8d8; line-height:1.7;">
               ${escapeHtml(order.shippingMode === "pickup" ? "Seu pedido ficou marcado para retirada com a vendedora." : "Seu frete ja foi calculado e o pedido segue para a proxima etapa de atendimento.")}
             </p>
+            <div style="margin-top:20px; background:#101010; border:1px solid #2b2b2b; border-radius:14px; padding:18px;">
+              <p style="margin:0 0 14px; color:#d8d8d8; line-height:1.7;">
+                Para acompanhar avisos, atualizacoes e informacoes sobre os leques comprados, entre no grupo oficial:
+              </p>
+              <a href="https://chat.whatsapp.com/Ftg3NmZv1bkDjXnpOa8lSY?mode=gi_t" style="display:inline-block; background:#cc0000; color:#ffffff; text-decoration:none; font-weight:700; padding:12px 18px; border-radius:10px;">
+                Entrar no grupo do WhatsApp
+              </a>
+            </div>
           </div>
         </div>
       </div>
