@@ -22,6 +22,23 @@ function parseJsonBody(req) {
   return null;
 }
 
+async function readRawBody(req) {
+  if (!req || typeof req.on !== "function") {
+    return "";
+  }
+
+  return await new Promise((resolve, reject) => {
+    let data = "";
+
+    req.on("data", chunk => {
+      data += chunk;
+    });
+
+    req.on("end", () => resolve(data));
+    req.on("error", reject);
+  });
+}
+
 function escapeHtml(value) {
   return String(value || "")
     .replaceAll("&", "&amp;")
@@ -87,7 +104,18 @@ export default async function handler(req, res) {
     return;
   }
 
-  const payload = parseJsonBody(req);
+  let payload = parseJsonBody(req);
+  if (!payload) {
+    const rawBody = await readRawBody(req);
+    if (rawBody) {
+      try {
+        payload = JSON.parse(rawBody);
+      } catch {
+        payload = null;
+      }
+    }
+  }
+
   if (!payload) {
     res.status(400).json({ ok: false, error: "Invalid JSON body" });
     return;
