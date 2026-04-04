@@ -56,6 +56,8 @@ function validatePayload(payload) {
   const address = payload?.address || {};
   const order = payload?.order || {};
   const privacy = payload?.privacy || {};
+  const deliveryMode = sanitizeString(order.deliveryMode || "delivery");
+  const shippingCost = Number(order.shippingCost || 0);
 
   if (!customer.name || !customer.email || !customer.phone) {
     return "Preencha nome, e-mail e numero antes de gerar o checkout.";
@@ -67,6 +69,13 @@ function validatePayload(payload) {
 
   if (!order.productName || !order.quantity || !order.unitPrice) {
     return "Nao foi possivel montar o pedido.";
+  }
+
+  if (
+    !order.shippingLabel ||
+    (deliveryMode !== "pickup" && (Number.isNaN(shippingCost) || shippingCost < 0))
+  ) {
+    return "Calcule o frete ou escolha retirada antes de abrir o checkout.";
   }
 
   if (!privacy.checkoutPrivacyConsent || !privacy.checkoutEmailConsent) {
@@ -88,6 +97,11 @@ function buildPreference(body, req) {
   const quantity = Number(order.quantity);
   const unitPrice = Number(order.unitPrice);
   const subtotal = Number(order.subtotal || quantity * unitPrice);
+  const shippingCost = Math.max(0, Number(order.shippingCost || 0));
+  const total = Number(order.total || subtotal + shippingCost);
+  const deliveryMode = sanitizeString(order.deliveryMode || "delivery") === "pickup" ? "pickup" : "delivery";
+  const shippingService = sanitizeString(order.shippingService || (deliveryMode === "pickup" ? "retirada" : "jadlog"));
+  const shippingLabel = sanitizeString(order.shippingLabel || "");
   const preferredPaymentMethod = body.preferredPaymentMethod === "card" ? "card" : "pix";
   const externalReference = buildExternalReference();
   const baseUrl = getBaseUrl(req);
@@ -110,18 +124,31 @@ function buildPreference(body, req) {
           installments: 12
         };
 
+  const items = [
+    {
+      id: sanitizeString(order.productName).toLowerCase().replaceAll(/\s+/g, "-"),
+      title: sanitizeString(order.productName),
+      description: "Leque oficial da Flacalcinha",
+      quantity,
+      currency_id: "BRL",
+      unit_price: unitPrice
+    }
+  ];
+
+  if (deliveryMode === "delivery" && shippingCost > 0) {
+    items.push({
+      id: "frete-jadlog",
+      title: "Frete Jadlog",
+      description: shippingLabel || "Frete calculado para o pedido",
+      quantity: 1,
+      currency_id: "BRL",
+      unit_price: shippingCost
+    });
+  }
+
   return {
     preference: {
-      items: [
-        {
-          id: sanitizeString(order.productName).toLowerCase().replaceAll(/\s+/g, "-"),
-          title: sanitizeString(order.productName),
-          description: "Leque oficial da Flacalcinha",
-          quantity,
-          currency_id: "BRL",
-          unit_price: unitPrice
-        }
-      ],
+      items,
       payer: {
         name,
         surname,
@@ -150,10 +177,15 @@ function buildPreference(body, req) {
         product_name: sanitizeString(order.productName),
         quantity: String(quantity),
         subtotal: String(subtotal),
+        total: String(total),
         address_cep: sanitizeString(address.cep),
         address_city: sanitizeString(address.city),
         address_state: sanitizeString(address.state).toUpperCase(),
-        shipping_status: "pending_shipping_integration",
+        shipping_cost: String(shippingCost),
+        shipping_label: shippingLabel,
+        shipping_mode: deliveryMode,
+        shipping_service: shippingService,
+        shipping_deadline_days: sanitizeString(order.deliveryDeadlineDays || ""),
         preferred_payment_method: preferredPaymentMethod
       }
     },

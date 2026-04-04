@@ -690,6 +690,33 @@
       font-size: .9rem;
       line-height: 1.5;
     }
+    .payment-option[disabled] {
+      opacity: .45;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .shipping-mode-wrap {
+      margin: 1.2rem 0 1rem;
+      padding: 1.1rem;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+    }
+    .shipping-mode-wrap h4 {
+      margin: 0 0 .35rem;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.28rem;
+      color: #fff1e0;
+    }
+    .shipping-mode-copy {
+      margin: 0 0 1rem;
+      color: rgba(250,250,250,.74);
+      line-height: 1.6;
+      font-size: .92rem;
+    }
+    .shipping-mode-hint {
+      margin-top: .9rem;
+    }
     .payment-panel {
       display: none;
       margin-top: 1rem;
@@ -1098,6 +1125,24 @@
               <textarea id="shippingNotes" placeholder="Se houver alguma observação importante para entrega ou pagamento, deixe aqui."></textarea>
             </div>
 
+            <div class="shipping-mode-wrap">
+              <h4>Entrega ou retirada</h4>
+              <p class="shipping-mode-copy">Você pode receber pela Jadlog ou, se estiver em uma das cidades liberadas do RJ, retirar com a própria vendedora e zerar o frete.</p>
+
+              <div class="payment-methods">
+                <button type="button" class="payment-option shipping-option active" data-shipping="delivery">
+                  <strong>Entrega com Jadlog</strong>
+                  <span>O valor do frete entra no total do pedido antes de abrir o Mercado Pago.</span>
+                </button>
+                <button type="button" class="payment-option shipping-option" data-shipping="pickup" id="pickupOption" disabled>
+                  <strong>Retirar com a vendedora</strong>
+                  <span>Frete grátis para Cachoeiras, Itaboraí, Nova Friburgo, Tanguá e Rio Bonito (RJ).</span>
+                </button>
+              </div>
+
+              <p class="summary-note shipping-mode-hint" id="shippingModeHint">A retirada é liberada automaticamente quando o endereço estiver em uma das cidades combinadas.</p>
+            </div>
+
             <div class="consent-box">
               <label class="consent-item" for="checkoutPrivacyConsent">
                 <input type="checkbox" id="checkoutPrivacyConsent" />
@@ -1215,11 +1260,11 @@
         </div>
         <div class="privacy-block">
           <h4>Para que usamos</h4>
-          <p>Os dados são usados para gerar o checkout do Mercado Pago, confirmar pagamento, enviar e-mails transacionais, responder contatos e organizar o atendimento do pedido. Não usamos esses dados para finalidades incompatíveis com a compra ou com a fila de espera.</p>
+          <p>Os dados são usados para gerar o checkout do Mercado Pago, calcular frete com a Jadlog, confirmar pagamento, enviar e-mails transacionais, responder contatos e organizar o atendimento do pedido. Não usamos esses dados para finalidades incompatíveis com a compra ou com a fila de espera.</p>
         </div>
         <div class="privacy-block">
           <h4>Com quem compartilhamos</h4>
-          <p>Compartilhamos apenas o necessário com prestadores operacionais do site, como Mercado Pago para pagamento e Resend para envio de e-mails. Não mantemos dados financeiros completos dentro do código do site.</p>
+          <p>Compartilhamos apenas o necessário com prestadores operacionais do site, como Mercado Pago para pagamento, Jadlog para cotação e logística de entrega, e Resend para envio de e-mails. Não mantemos dados financeiros completos dentro do código do site.</p>
         </div>
         <div class="privacy-block">
           <h4>Como protegemos</h4>
@@ -1292,7 +1337,8 @@
     const unitPrice = 45;
     const checkoutStorageKey = 'flacalcinha-checkout';
     const productButtons = document.querySelectorAll('.product-card');
-    const paymentButtons = document.querySelectorAll('.payment-option');
+    const paymentButtons = document.querySelectorAll('.payment-option[data-payment]');
+    const shippingButtons = document.querySelectorAll('.shipping-option');
     const quantitySelect = document.getElementById('quantity');
     const decreaseQuantity = document.getElementById('decreaseQuantity');
     const increaseQuantity = document.getElementById('increaseQuantity');
@@ -1314,12 +1360,14 @@
     const checkoutSection = document.getElementById('checkout');
     const stepAddress = document.getElementById('stepAddress');
     const stepPayment = document.getElementById('stepPayment');
+    const pickupOption = document.getElementById('pickupOption');
     const summaryProduct = document.getElementById('summaryProduct');
     const summaryQuantity = document.getElementById('summaryQuantity');
     const summarySubtotal = document.getElementById('summarySubtotal');
     const summaryShipping = document.getElementById('summaryShipping');
     const summaryTotal = document.getElementById('summaryTotal');
     const shippingHelper = document.getElementById('shippingHelper');
+    const shippingModeHint = document.getElementById('shippingModeHint');
     const buyerName = document.getElementById('buyerName');
     const buyerEmail = document.getElementById('buyerEmail');
     const buyerPhone = document.getElementById('buyerPhone');
@@ -1340,11 +1388,39 @@
 
     let selectedProduct = 'Leque Flacalcinha';
     let selectedPayment = 'pix';
+    let selectedShippingMode = 'delivery';
+    let shippingQuoteTimer = 0;
+    let shippingQuoteRequestId = 0;
+    let shippingState = {
+      status: 'idle',
+      cost: 0,
+      days: null,
+      label: 'A calcular',
+      eligiblePickup: false,
+      lastKey: '',
+      error: ''
+    };
+
+    const pickupCities = [
+      'cachoeiras',
+      'itaborai',
+      'nova friburgo',
+      'tangua',
+      'rio bonito'
+    ];
 
     const formatCurrency = value => new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
+
+    const normalizeText = value => String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLowerCase();
+
+    const getDigits = value => String(value || '').replace(/\D/g, '');
 
     function getQuantity() {
       let quantity = Number(quantitySelect.value);
@@ -1354,9 +1430,43 @@
       return quantity;
     }
 
+    function getSubtotal() {
+      return getQuantity() * unitPrice;
+    }
+
+    function isPickupEligible() {
+      const city = normalizeText(buyerCity.value);
+      const state = buyerState.value.trim().toUpperCase();
+      return state === 'RJ' && pickupCities.some(item => city.startsWith(item));
+    }
+
+    function getShippingCost() {
+      if (selectedShippingMode === 'pickup') return 0;
+      if (shippingState.status !== 'ready') return 0;
+      return Number(shippingState.cost || 0);
+    }
+
+    function getShippingLabel() {
+      if (selectedShippingMode === 'pickup') {
+        return `Retirada com a vendedora em ${buyerCity.value.trim() || 'cidade liberada'}`;
+      }
+
+      if (shippingState.status === 'ready') {
+        return shippingState.label;
+      }
+
+      if (shippingState.status === 'loading') {
+        return 'Calculando Jadlog...';
+      }
+
+      return 'A calcular';
+    }
+
     function buildCheckoutPayload() {
       const quantity = getQuantity();
-      const subtotal = quantity * unitPrice;
+      const subtotal = getSubtotal();
+      const shippingCost = getShippingCost();
+      const total = subtotal + shippingCost;
 
       return {
         customer: {
@@ -1379,8 +1489,13 @@
           quantity,
           unitPrice,
           subtotal,
-          shippingLabel: 'Frete por CEP em integração',
-          totalLabel: formatCurrency(subtotal),
+          shippingCost,
+          shippingLabel: getShippingLabel(),
+          shippingService: selectedShippingMode === 'pickup' ? 'retirada' : 'jadlog',
+          deliveryMode: selectedShippingMode,
+          deliveryDeadlineDays: shippingState.days,
+          total,
+          totalLabel: formatCurrency(total),
           paymentMethod: selectedPayment === 'card' ? 'Cartão de crédito' : 'Pix'
         },
         preferredPaymentMethod: selectedPayment,
@@ -1400,6 +1515,16 @@
         return 'Preencha CEP, rua, número, bairro, cidade e estado antes de gerar o checkout.';
       }
 
+      if (payload.order.deliveryMode === 'pickup' && !shippingState.eligiblePickup) {
+        return 'A retirada só fica disponível para Cachoeiras, Itaboraí, Nova Friburgo, Tanguá e Rio Bonito (RJ).';
+      }
+
+      if (payload.order.deliveryMode === 'delivery' && shippingState.status !== 'ready') {
+        return shippingState.status === 'loading'
+          ? 'Aguarde o cálculo do frete pela Jadlog antes de continuar.'
+          : 'Informe um CEP válido para calcular o frete antes de abrir o checkout.';
+      }
+
       if (!payload.privacy.checkoutPrivacyConsent || !payload.privacy.checkoutEmailConsent) {
         return 'Você precisa autorizar o tratamento dos dados do pedido e os e-mails transacionais para continuar.';
       }
@@ -1416,6 +1541,10 @@
 
       if (normalized === 'missing address fields') {
         return 'Preencha CEP, rua, número, bairro, cidade e estado antes de gerar o checkout.';
+      }
+
+      if (normalized === 'missing shipping fields') {
+        return 'Calcule o frete ou escolha retirada antes de abrir o checkout.';
       }
 
       if (normalized === 'missing order fields') {
@@ -1444,29 +1573,180 @@
       paymentStatusBanner.className = 'payment-status-banner';
     }
 
+    function updateShippingEligibility() {
+      const eligiblePickup = isPickupEligible();
+      shippingState.eligiblePickup = eligiblePickup;
+      pickupOption.disabled = !eligiblePickup;
+
+      if (selectedShippingMode === 'pickup' && !eligiblePickup) {
+        selectedShippingMode = 'delivery';
+      }
+
+      shippingButtons.forEach(button => {
+        button.classList.toggle('active', button.dataset.shipping === selectedShippingMode);
+      });
+
+      shippingModeHint.textContent = eligiblePickup
+        ? 'Seu endereço está em uma das cidades liberadas. Se quiser, você pode retirar com a vendedora e o frete zera.'
+        : 'A retirada é liberada para Cachoeiras, Itaboraí, Nova Friburgo, Tanguá e Rio Bonito (RJ).';
+    }
+
+    async function fetchShippingQuote() {
+      const destinationZip = getDigits(buyerCep.value);
+      const quantity = getQuantity();
+
+      if (selectedShippingMode === 'pickup') {
+        shippingState = {
+          ...shippingState,
+          status: 'ready',
+          cost: 0,
+          days: null,
+          label: 'Retirada grátis',
+          error: '',
+          lastKey: `pickup:${normalizeText(buyerCity.value)}:${quantity}`
+        };
+        updateSummary();
+        return;
+      }
+
+      if (destinationZip.length !== 8) {
+        shippingState = {
+          ...shippingState,
+          status: 'idle',
+          cost: 0,
+          days: null,
+          label: 'A calcular',
+          error: '',
+          lastKey: ''
+        };
+        updateSummary();
+        return;
+      }
+
+      const requestKey = `${destinationZip}:${quantity}`;
+      if (shippingState.status === 'ready' && shippingState.lastKey === requestKey) {
+        updateSummary();
+        return;
+      }
+
+      const currentRequestId = ++shippingQuoteRequestId;
+      shippingState = {
+        ...shippingState,
+        status: 'loading',
+        error: ''
+      };
+      updateSummary();
+
+      try {
+        const response = await fetch('/api/shipping-quote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cep: destinationZip,
+            quantity
+          })
+        });
+
+        const result = await response.json().catch(() => ({}));
+        if (currentRequestId !== shippingQuoteRequestId) return;
+
+        if (!response.ok || !result?.shipping) {
+          throw new Error(result?.error || 'Não foi possível calcular o frete agora.');
+        }
+
+        shippingState = {
+          ...shippingState,
+          status: 'ready',
+          cost: Number(result.shipping.cost || 0),
+          days: Number(result.shipping.days || 0) || null,
+          label: result.shipping.label || formatCurrency(Number(result.shipping.cost || 0)),
+          error: '',
+          lastKey: requestKey
+        };
+      } catch (error) {
+        if (currentRequestId !== shippingQuoteRequestId) return;
+
+        shippingState = {
+          ...shippingState,
+          status: 'error',
+          cost: 0,
+          days: null,
+          label: 'Não calculado',
+          error: error.message || 'Não foi possível calcular o frete agora.',
+          lastKey: ''
+        };
+      }
+
+      updateSummary();
+    }
+
+    function queueShippingQuote() {
+      clearTimeout(shippingQuoteTimer);
+      updateShippingEligibility();
+
+      if (selectedShippingMode === 'pickup' && shippingState.eligiblePickup) {
+        fetchShippingQuote();
+        return;
+      }
+
+      if (getDigits(buyerCep.value).length !== 8) {
+        shippingState = {
+          ...shippingState,
+          status: 'idle',
+          cost: 0,
+          days: null,
+          label: 'A calcular',
+          error: '',
+          lastKey: ''
+        };
+        updateSummary();
+        return;
+      }
+
+      shippingQuoteTimer = window.setTimeout(() => {
+        fetchShippingQuote();
+      }, 450);
+    }
+
     function updateSummary() {
       const quantity = getQuantity();
-      const subtotal = quantity * unitPrice;
-      const hasMainAddress = [
-        buyerCep.value.trim(),
-        buyerStreet.value.trim(),
-        buyerNumber.value.trim(),
-        buyerDistrict.value.trim(),
-        buyerCity.value.trim(),
-        buyerState.value.trim()
-      ].every(Boolean);
+      const subtotal = getSubtotal();
+      const shippingCost = selectedShippingMode === 'pickup' ? 0 : Number(shippingState.cost || 0);
+      const total = subtotal + shippingCost;
 
       summaryProduct.textContent = selectedProduct;
       summaryQuantity.textContent = String(quantity);
       summarySubtotal.textContent = formatCurrency(subtotal);
-      summaryShipping.textContent = 'Em breve por CEP';
-      summaryTotal.textContent = formatCurrency(subtotal);
+      summaryTotal.textContent = formatCurrency(total);
 
-      if (hasMainAddress) {
-        shippingHelper.textContent = 'Seus dados já estão prontos. O cálculo automático de frete por CEP entra na próxima etapa; por agora o checkout libera o pagamento dos leques.';
-      } else {
-        shippingHelper.textContent = 'Preencha seus dados para gerar o checkout com o pedido correto. O frete automático por CEP entra na próxima etapa da loja.';
+      if (selectedShippingMode === 'pickup' && shippingState.eligiblePickup) {
+        summaryShipping.textContent = 'Retirada grátis';
+        shippingHelper.textContent = `Retirada liberada para ${buyerCity.value.trim() || 'sua cidade'}. O pedido segue com frete zero e você combina a entrega com a vendedora.`;
+        return;
       }
+
+      if (shippingState.status === 'ready') {
+        summaryShipping.textContent = formatCurrency(shippingCost);
+        shippingHelper.textContent = shippingState.days
+          ? `Frete Jadlog calculado com prazo estimado de ${shippingState.days} ${shippingState.days === 1 ? 'dia útil' : 'dias úteis'}.`
+          : 'Frete Jadlog calculado para este CEP.';
+        return;
+      }
+
+      if (shippingState.status === 'loading') {
+        summaryShipping.textContent = 'Calculando...';
+        shippingHelper.textContent = 'Consultando a Jadlog para fechar o valor do frete deste CEP.';
+        return;
+      }
+
+      if (shippingState.status === 'error') {
+        summaryShipping.textContent = 'Não calculado';
+        shippingHelper.textContent = shippingState.error || 'Não foi possível calcular o frete agora. Revise o CEP e tente novamente.';
+        return;
+      }
+
+      summaryShipping.textContent = 'A calcular';
+      shippingHelper.textContent = 'Informe um CEP válido para calcular o frete antes de abrir o checkout.';
     }
 
     function updatePaymentPanels() {
@@ -1496,6 +1776,7 @@
       const state = {
         selectedProduct,
         selectedPayment,
+        selectedShippingMode,
         quantity: getQuantity()
       };
 
@@ -1520,6 +1801,10 @@
           paymentButtons.forEach(button => {
             button.classList.toggle('active', button.dataset.payment === selectedPayment);
           });
+        }
+
+        if (state.selectedShippingMode) {
+          selectedShippingMode = state.selectedShippingMode;
         }
 
         if (state.quantity) {
@@ -1570,6 +1855,20 @@
       });
     });
 
+    shippingButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        if (button.disabled) return;
+
+        selectedShippingMode = button.dataset.shipping;
+        shippingButtons.forEach(item => {
+          item.classList.toggle('active', item.dataset.shipping === selectedShippingMode);
+        });
+        updateSummary();
+        queueShippingQuote();
+        saveCheckoutState();
+      });
+    });
+
     function openLeadModal() {
       leadFormContent.style.display = 'block';
       leadSuccessMessage.style.display = 'none';
@@ -1603,31 +1902,41 @@
 
     continueToAddress.addEventListener('click', openAddressStep);
     continueToAddressMobile.addEventListener('click', openAddressStep);
-    continueToPayment.addEventListener('click', openPaymentStep);
+    continueToPayment.addEventListener('click', () => {
+      const payload = buildCheckoutPayload();
+      const validationError = validateCheckoutPayload(payload);
+
+      if (validationError) {
+        setCheckoutFeedback(validationError, 'error');
+        scrollToSection(stepAddress);
+        return;
+      }
+
+      setCheckoutFeedback('', '');
+      openPaymentStep();
+    });
 
     decreaseQuantity.addEventListener('click', () => {
       quantitySelect.value = String(Math.max(1, getQuantity() - 1));
       updateSummary();
+      queueShippingQuote();
       saveCheckoutState();
     });
 
     increaseQuantity.addEventListener('click', () => {
       quantitySelect.value = String(Math.min(50, getQuantity() + 1));
       updateSummary();
+      queueShippingQuote();
       saveCheckoutState();
     });
 
     [
-      quantitySelect,
       buyerName,
       buyerEmail,
       buyerPhone,
-      buyerCep,
       buyerStreet,
       buyerNumber,
       buyerDistrict,
-      buyerCity,
-      buyerState,
       buyerComplement,
       shippingNotes
     ].forEach(field => {
@@ -1635,7 +1944,21 @@
         updateSummary();
         saveCheckoutState();
       });
-      field.addEventListener('change', saveCheckoutState);
+      field.addEventListener('change', () => {
+        saveCheckoutState();
+      });
+    });
+
+    [quantitySelect, buyerCep, buyerCity, buyerState].forEach(field => {
+      field.addEventListener('input', () => {
+        updateSummary();
+        queueShippingQuote();
+        saveCheckoutState();
+      });
+      field.addEventListener('change', () => {
+        queueShippingQuote();
+        saveCheckoutState();
+      });
     });
 
     startCheckoutButton.addEventListener('click', async () => {
@@ -1721,8 +2044,10 @@
     });
 
     restoreCheckoutState();
+    updateShippingEligibility();
     updateSummary();
     updatePaymentPanels();
+    queueShippingQuote();
     handlePaymentReturn();
   </script>
 

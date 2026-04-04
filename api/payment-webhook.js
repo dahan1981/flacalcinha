@@ -167,7 +167,9 @@ function normalizePayment(payment) {
     quantity: Number(metadata.quantity || item.quantity || 1),
     subtotal: Number(metadata.subtotal || payment.transaction_details?.total_paid_amount || payment.transaction_amount || 0),
     shippingCost: Number(metadata.shipping_cost || 0),
-    total: Number(payment.transaction_amount || metadata.subtotal || 0),
+    shippingLabel: metadata.shipping_label || (Number(metadata.shipping_cost || 0) > 0 ? "Frete Jadlog" : "Retirada com a vendedora"),
+    shippingMode: metadata.shipping_mode || "delivery",
+    total: Number(payment.transaction_amount || metadata.total || metadata.subtotal || 0),
     address: {
       cep: metadata.address_cep || "Nao informado",
       street: "Coletado no checkout",
@@ -202,7 +204,7 @@ function buildAdminEmail(order) {
               <p style="margin:0 0 8px;"><strong>Produto:</strong> ${escapeHtml(order.productName)}</p>
               <p style="margin:0 0 8px;"><strong>Quantidade:</strong> ${escapeHtml(order.quantity)}</p>
               <p style="margin:0 0 8px;"><strong>Subtotal:</strong> ${formatMoney(order.subtotal)}</p>
-              <p style="margin:0 0 8px;"><strong>Frete:</strong> Em integracao por CEP</p>
+              <p style="margin:0 0 8px;"><strong>Frete:</strong> ${escapeHtml(order.shippingMode === "pickup" ? order.shippingLabel : `${order.shippingLabel} (${formatMoney(order.shippingCost)})`)}</p>
               <p style="margin:0;"><strong>Total pago:</strong> ${formatMoney(order.total)}</p>
             </div>
             <div style="background:#101010; border:1px solid #2b2b2b; border-radius:14px; padding:18px; margin-bottom:16px;">
@@ -246,7 +248,7 @@ function buildCustomerEmail(order) {
               <p style="margin:0;"><strong>Total pago:</strong> ${formatMoney(order.total)}</p>
             </div>
             <p style="margin:0; color:#d8d8d8; line-height:1.7;">
-              Em breve voce recebera as proximas orientacoes sobre entrega. O calculo automatico de frete por CEP entra na proxima etapa da loja, mas seu pedido ja esta confirmado.
+              ${escapeHtml(order.shippingMode === "pickup" ? "Seu pedido ficou marcado para retirada com a vendedora." : "Seu frete ja foi calculado e o pedido segue para a proxima etapa de atendimento.")}
             </p>
           </div>
         </div>
