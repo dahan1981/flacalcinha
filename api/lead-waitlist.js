@@ -96,6 +96,52 @@ async function sendEmail(payload) {
   }
 }
 
+async function sendCustomerConfirmation(payload) {
+  if (!RESEND_API_KEY) {
+    throw new Error("Email environment not configured");
+  }
+
+  const name = escapeHtml(payload.name);
+  const email = String(payload.email || "").trim();
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from: EMAIL_FROM,
+      to: [email],
+      subject: "Você entrou na fila de espera da Flacalcinha",
+      html: `
+        <div style="font-family: Arial, sans-serif; background:#0d0d0d; color:#fafafa; padding:32px;">
+          <div style="max-width:640px; margin:0 auto; background:#151515; border:1px solid #2b2b2b; border-radius:18px; overflow:hidden;">
+            <div style="padding:28px 28px 20px; background:linear-gradient(135deg,#8b0000,#cc0000);">
+              <p style="margin:0 0 8px; font-size:12px; letter-spacing:1.6px; text-transform:uppercase; opacity:.9;">Fila de espera confirmada</p>
+              <h1 style="margin:0; font-size:28px; line-height:1.2;">Seu lugar esta guardado, ${name}</h1>
+            </div>
+            <div style="padding:28px;">
+              <p style="margin:0 0 18px; color:#d8d8d8; line-height:1.7;">
+                Recebemos seu cadastro com sucesso. Assim que a proxima leva da Flacalcinha estiver pronta, voce sera avisada primeiro.
+              </p>
+              <div style="background:#101010; border:1px solid #2b2b2b; border-radius:14px; padding:18px;">
+                <p style="margin:0 0 8px;"><strong>Nome:</strong> ${name}</p>
+                <p style="margin:0;"><strong>E-mail:</strong> ${escapeHtml(email)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+    })
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Falha ao enviar confirmacao: ${response.status} ${text}`);
+  }
+}
+
 export default async function handler(req, res) {
   setNoStore(res);
 
@@ -133,6 +179,7 @@ export default async function handler(req, res) {
 
   try {
     await sendEmail({ name, email, phone });
+    await sendCustomerConfirmation({ name, email });
     res.status(200).json({ ok: true });
   } catch (error) {
     res.status(500).json({
