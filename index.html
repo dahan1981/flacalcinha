@@ -2127,14 +2127,26 @@
         });
 
         if (!response.ok) {
-          throw new Error('Falha ao enviar lead');
+          const result = await response.json().catch(() => ({}));
+          throw new Error(result.error || 'Falha ao enviar lead');
         }
 
         leadFormContent.style.display = 'none';
         leadSuccessMessage.style.display = 'block';
         setLeadFeedback('', '');
       } catch (error) {
-        setLeadFeedback('Não conseguimos confirmar seu cadastro agora. Tente novamente em instantes.', 'error');
+        const message = String(error?.message || '');
+        const looksLikeResendSenderIssue =
+          message.toLowerCase().includes('onboarding@resend.dev') ||
+          message.toLowerCase().includes('verify a domain') ||
+          message.toLowerCase().includes('domain is not verified');
+
+        setLeadFeedback(
+          looksLikeResendSenderIssue
+            ? 'O e-mail do site ainda precisa ser validado na Resend para confirmar o lead. Assim que isso for ajustado, o cadastro volta a funcionar normalmente.'
+            : 'Não conseguimos confirmar seu cadastro agora. Tente novamente em instantes.',
+          'error'
+        );
         submitLeadButton.disabled = false;
         submitLeadButton.textContent = 'Entrar na fila de espera';
       }

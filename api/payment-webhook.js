@@ -2,6 +2,7 @@ const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
 const MP_WEBHOOK_SECRET = process.env.MP_WEBHOOK_SECRET;
+const EMAIL_FROM = process.env.EMAIL_FROM || "Flacalcinha <onboarding@resend.dev>";
 
 function setNoStore(res) {
   res.setHeader("Cache-Control", "no-store, max-age=0");
@@ -269,7 +270,7 @@ async function sendResendEmail({ to, subject, html, replyTo }) {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      from: "Flacalcinha <onboarding@resend.dev>",
+      from: EMAIL_FROM,
       to: Array.isArray(to) ? to : [to],
       subject,
       html,

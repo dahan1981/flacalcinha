@@ -1,5 +1,6 @@
 const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const EMAIL_FROM = process.env.EMAIL_FROM || "Flacalcinha <onboarding@resend.dev>";
 
 function setNoStore(res) {
   res.setHeader("Cache-Control", "no-store, max-age=0");
@@ -46,7 +47,7 @@ async function sendEmail(payload) {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      from: "Flacalcinha <onboarding@resend.dev>",
+      from: EMAIL_FROM,
       to: [NOTIFICATION_EMAIL],
       subject: `${payload.name} entrou na fila de espera`,
       html: `
