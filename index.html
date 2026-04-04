@@ -469,8 +469,27 @@
       transition: background .2s, transform .2s;
     }
     .btn-form:hover { background: var(--red2); transform: translateY(-1px); }
+    .btn-form:disabled {
+      opacity: .7;
+      cursor: wait;
+      transform: none;
+    }
 
     .modal-fine { font-size: .68rem; color: rgba(255,255,255,.3); text-align: center; margin-top: 1rem; }
+    .modal-feedback {
+      min-height: 1.2rem;
+      margin-top: .85rem;
+      text-align: center;
+      font-size: .82rem;
+      line-height: 1.5;
+      color: rgba(255,255,255,.72);
+    }
+    .modal-feedback.error {
+      color: #ffb3b3;
+    }
+    .modal-feedback.success {
+      color: #b7f3c0;
+    }
 
     /* â”€â”€ SUCCESS â”€â”€ */
     .success-msg { text-align: center; display: none; }
@@ -1322,13 +1341,14 @@
         </div>
 
         <button class="btn-form" id="submitForm">Entrar na fila de espera</button>
+        <div class="modal-feedback" id="leadFeedback"></div>
         <p class="modal-fine">Sem spam. Apenas aviso de lançamento e novidades reais.</p>
       </div>
 
       <div class="success-msg" id="successMsg">
         <div class="check">✓</div>
         <h3>Você entrou na fila</h3>
-        <p>Seu lugar está guardado. Assim que a próxima leva chegar, você será avisada primeiro.</p>
+        <p>Seu cadastro foi recebido com sucesso. Assim que a próxima leva chegar, você será avisada primeiro.</p>
       </div>
     </div>
   </div>
@@ -1349,6 +1369,7 @@
     const submitLeadButton = document.getElementById('submitForm');
     const leadFormContent = document.getElementById('formContent');
     const leadSuccessMessage = document.getElementById('successMsg');
+    const leadFeedback = document.getElementById('leadFeedback');
     const leadNameInput = document.getElementById('nome');
     const leadEmailInput = document.getElementById('email');
     const leadPhoneInput = document.getElementById('whats');
@@ -1612,6 +1633,11 @@
     function clearPaymentBanner() {
       paymentStatusBanner.textContent = '';
       paymentStatusBanner.className = 'payment-status-banner';
+    }
+
+    function setLeadFeedback(message, type = '') {
+      leadFeedback.textContent = message;
+      leadFeedback.className = `modal-feedback${type ? ` ${type}` : ''}`;
     }
 
     function updateShippingEligibility() {
@@ -1919,6 +1945,7 @@
       leadSuccessMessage.style.display = 'none';
       submitLeadButton.disabled = false;
       submitLeadButton.textContent = 'Entrar na fila de espera';
+      setLeadFeedback('', '');
       modalOverlay.classList.add('open');
       document.body.style.overflow = 'hidden';
     }
@@ -2080,6 +2107,7 @@
       };
 
       if (!payload.name || !payload.email || !payload.phone || !payload.privacyConsent) {
+        setLeadFeedback('Preencha nome, e-mail, número e autorize o contato para entrar na fila.', 'error');
         if (!payload.name) leadNameInput.focus();
         else if (!payload.email) leadEmailInput.focus();
         else if (!payload.phone) leadPhoneInput.focus();
@@ -2087,6 +2115,7 @@
         return;
       }
 
+      setLeadFeedback('Estamos confirmando sua entrada na fila...', 'success');
       submitLeadButton.disabled = true;
       submitLeadButton.textContent = 'Enviando...';
 
@@ -2103,7 +2132,9 @@
 
         leadFormContent.style.display = 'none';
         leadSuccessMessage.style.display = 'block';
+        setLeadFeedback('', '');
       } catch (error) {
+        setLeadFeedback('Não conseguimos confirmar seu cadastro agora. Tente novamente em instantes.', 'error');
         submitLeadButton.disabled = false;
         submitLeadButton.textContent = 'Entrar na fila de espera';
       }
