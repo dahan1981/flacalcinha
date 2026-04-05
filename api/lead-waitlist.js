@@ -7,6 +7,10 @@ function setNoStore(res) {
   res.setHeader("Cache-Control", "no-store, max-age=0");
 }
 
+function sendSafeError(res, status, message) {
+  res.status(status).json({ ok: false, error: message });
+}
+
 function parseJsonBody(req) {
   if (typeof req.body === "string") {
     try {
@@ -148,7 +152,7 @@ export default async function handler(req, res) {
   setNoStore(res);
 
   if (req.method !== "POST") {
-    res.status(405).json({ ok: false, error: "Method not allowed" });
+    sendSafeError(res, 405, "Metodo nao permitido");
     return;
   }
 
@@ -165,7 +169,7 @@ export default async function handler(req, res) {
   }
 
   if (!payload) {
-    res.status(400).json({ ok: false, error: "Invalid JSON body" });
+    sendSafeError(res, 400, "Dados invalidos");
     return;
   }
 
@@ -175,7 +179,7 @@ export default async function handler(req, res) {
   const privacyConsent = Boolean(payload.privacyConsent);
 
   if (!name || !email || !phone || !privacyConsent) {
-    res.status(400).json({ ok: false, error: "Missing required fields" });
+    sendSafeError(res, 400, "Preencha todos os campos obrigatorios");
     return;
   }
 
@@ -184,9 +188,6 @@ export default async function handler(req, res) {
     await sendCustomerConfirmation({ name, email });
     res.status(200).json({ ok: true });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      error: error instanceof Error ? error.message : "Unknown error"
-    });
+    sendSafeError(res, 500, "Nao foi possivel confirmar seu cadastro agora");
   }
 }

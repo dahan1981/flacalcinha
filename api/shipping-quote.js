@@ -11,6 +11,13 @@ function setNoStore(res) {
   res.setHeader("Cache-Control", "no-store, max-age=0");
 }
 
+function sendSafeError(res, status, message, retryAfterSeconds) {
+  if (retryAfterSeconds) {
+    res.setHeader("Retry-After", String(retryAfterSeconds));
+  }
+  res.status(status).json({ ok: false, error: message });
+}
+
 function parseJsonBody(req) {
   if (typeof req.body === "string") {
     try {
@@ -49,16 +56,39 @@ function normalizeError(result) {
   );
 }
 
+function getClientIp(req) {
+  const forwardedFor = req.headers?.["x-forwarded-for"] || req.headers?.["X-Forwarded-For"];
+  const raw = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor;
+  return String(raw || req.socket?.remoteAddress || "unknown").split(",")[0].trim();
+}
+
+function isRateLimited(ip) {
+  const key = `shipping:${ip}`;
+  const now = Date.now();
+  const windowMs = 60_000;
+  const limit = 20;
+  const store = globalThis.__shippingQuoteRateLimit || (globalThis.__shippingQuoteRateLimit = new Map());
+  const recent = (store.get(key) || []).filter(timestamp => now - timestamp < windowMs);
+  recent.push(now);
+  store.set(key, recent);
+  return recent.length > limit;
+}
+
 export default async function handler(req, res) {
   setNoStore(res);
 
   if (req.method !== "POST") {
-    res.status(405).json({ ok: false, error: "Method not allowed" });
+    sendSafeError(res, 405, "Metodo nao permitido");
     return;
   }
 
   if (!JADLOG_TOKEN || !JADLOG_USER || !JADLOG_CLIENT_CODE || !JADLOG_ORIGIN_ZIP) {
-    res.status(500).json({ ok: false, error: "Jadlog environment not configured" });
+    sendSafeError(res, 500, "Frete indisponivel no momento");
+    return;
+  }
+
+  if (isRateLimited(getClientIp(req))) {
+    sendSafeError(res, 429, "Muitas consultas de frete. Tente novamente em instantes.", 60);
     return;
   }
 
@@ -67,7 +97,7 @@ export default async function handler(req, res) {
   const quantity = Math.max(1, Math.min(50, Number(body?.quantity || 1)));
 
   if (destinationZip.length !== 8) {
-    res.status(400).json({ ok: false, error: "CEP invalido para cotacao" });
+    sendSafeError(res, 400, "CEP invalido para cotacao");
     return;
   }
 
@@ -123,9 +153,6 @@ export default async function handler(req, res) {
       }
     });
   } catch (error) {
-    res.status(502).json({
-      ok: false,
-      error: error instanceof Error ? error.message : "Falha ao consultar a Jadlog"
-    });
+    sendSafeError(res, 502, "Nao foi possivel calcular o frete agora");
   }
 }

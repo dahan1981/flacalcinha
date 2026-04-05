@@ -28,6 +28,10 @@ function setNoStore(res) {
   res.setHeader("Cache-Control", "no-store, max-age=0");
 }
 
+function sendSafeError(res, status, message) {
+  res.status(status).json({ ok: false, error: message });
+}
+
 function getBaseUrl(req) {
   const forwardedProto = getHeader(req, "x-forwarded-proto") || "https";
   const forwardedHost = getHeader(req, "x-forwarded-host") || getHeader(req, "host");
@@ -194,25 +198,18 @@ function buildPreference(body, req) {
       metadata: {
         customer_name: sanitizeString(customer.name),
         customer_email: sanitizeString(customer.email),
-        customer_phone: sanitizeString(customer.phone),
         product_name: productSummary,
         product_summary: productSummary,
         quantity: String(quantity),
         subtotal: String(subtotal),
         total: String(total),
         address_cep: sanitizeString(address.cep),
-        address_city: sanitizeString(address.city),
-        address_state: sanitizeString(address.state).toUpperCase(),
         shipping_cost: String(shippingCost),
         shipping_label: shippingLabel,
         shipping_mode: deliveryMode,
         shipping_service: shippingService,
         shipping_deadline_days: sanitizeString(order.deliveryDeadlineDays || ""),
-        preferred_payment_method: preferredPaymentMethod,
-        order_items: JSON.stringify(normalizedItems.map(item => ({
-          productName: item.productName,
-          quantity: item.quantity
-        })))
+        preferred_payment_method: preferredPaymentMethod
       }
     },
     externalReference
@@ -223,24 +220,24 @@ export default async function handler(req, res) {
   setNoStore(res);
 
   if (req.method !== "POST") {
-    res.status(405).json({ ok: false, error: "Method not allowed" });
+    sendSafeError(res, 405, "Metodo nao permitido");
     return;
   }
 
   if (!MP_ACCESS_TOKEN) {
-    res.status(500).json({ ok: false, error: "MP_ACCESS_TOKEN not configured" });
+    sendSafeError(res, 500, "Checkout indisponivel no momento");
     return;
   }
 
   const body = parseJsonBody(req);
   if (!body) {
-    res.status(400).json({ ok: false, error: "Invalid JSON body" });
+    sendSafeError(res, 400, "Dados invalidos");
     return;
   }
 
   const validationError = validatePayload(body);
   if (validationError) {
-    res.status(400).json({ ok: false, error: validationError });
+    sendSafeError(res, 400, validationError);
     return;
   }
 
@@ -270,9 +267,6 @@ export default async function handler(req, res) {
       externalReference
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      error: error instanceof Error ? error.message : "Unknown error"
-    });
+    sendSafeError(res, 500, "Nao foi possivel abrir o checkout agora");
   }
 }
