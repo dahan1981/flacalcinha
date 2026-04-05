@@ -9,10 +9,6 @@ function setNoStore(res) {
   res.setHeader("Cache-Control", "no-store, max-age=0");
 }
 
-function sendSafeError(res, status, message) {
-  res.status(status).json({ ok: false, error: message });
-}
-
 function getHeader(req, name) {
   const value = req.headers?.[name] ?? req.headers?.[name.toLowerCase()];
   return Array.isArray(value) ? value[0] : value;
@@ -176,7 +172,11 @@ function normalizePayment(payment) {
           : payment.payment_method_id || payment.payment_type_id || "Mercado Pago",
     customerName: metadata.customer_name || payment.payer?.first_name || "Cliente",
     customerEmail: metadata.customer_email || payment.payer?.email || "",
-    customerPhone: payment.payer?.phone?.number || payment.additional_info?.payer?.phone?.number || "",
+    customerPhone:
+      metadata.customer_phone ||
+      payment.payer?.phone?.number ||
+      payment.additional_info?.payer?.phone?.number ||
+      "",
     productName: metadata.product_summary || metadata.product_name || derivedSummary || firstItem.title || "Leque Flacalcinha",
     quantity: Number(metadata.quantity || derivedQuantity || firstItem.quantity || 1),
     subtotal: Number(metadata.subtotal || derivedSubtotal || payment.transaction_details?.total_paid_amount || payment.transaction_amount || 0),
@@ -189,8 +189,8 @@ function normalizePayment(payment) {
       street: "Coletado no checkout",
       number: "-",
       district: "-",
-      city: "Nao informado",
-      state: "Nao informado",
+      city: metadata.address_city || "Nao informado",
+      state: metadata.address_state || "Nao informado",
       complement: "",
       notes: ""
     }
@@ -310,12 +310,7 @@ export default async function handler(req, res) {
   setNoStore(res);
 
   if (req.method !== "POST") {
-    sendSafeError(res, 405, "Metodo nao permitido");
-    return;
-  }
-
-  if (!MP_WEBHOOK_SECRET) {
-    sendSafeError(res, 500, "Webhook indisponivel");
+    res.status(405).json({ ok: false, error: "Method not allowed" });
     return;
   }
 
@@ -334,7 +329,7 @@ export default async function handler(req, res) {
   }
 
   if (!(await verifyWebhookSignature(req, notificationId))) {
-    sendSafeError(res, 401, "Nao autorizado");
+    res.status(401).json({ ok: false, error: "Unauthorized" });
     return;
   }
 
@@ -372,6 +367,9 @@ export default async function handler(req, res) {
       customerNotified: Boolean(order.customerEmail)
     });
   } catch (error) {
-    sendSafeError(res, 500, "Falha ao processar o webhook");
+    res.status(500).json({
+      ok: false,
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
   }
 }
