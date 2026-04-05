@@ -147,7 +147,18 @@ async function getPaymentDetails(paymentId) {
 
 function normalizePayment(payment) {
   const metadata = payment.metadata || {};
-  const item = payment.additional_info?.items?.[0] || {};
+  const paymentItems = Array.isArray(payment.additional_info?.items) ? payment.additional_info.items : [];
+  const productItems = paymentItems.filter(item => {
+    const title = String(item?.title || "").toLowerCase();
+    const id = String(item?.id || "").toLowerCase();
+    return id !== "frete-jadlog" && title !== "frete jadlog";
+  });
+  const firstItem = productItems[0] || {};
+  const derivedQuantity = productItems.reduce((total, item) => total + Number(item.quantity || 0), 0);
+  const derivedSummary = productItems
+    .map(item => `${item.title || "Leque Flacalcinha"} x${Number(item.quantity || 0)}`)
+    .join(", ");
+  const derivedSubtotal = productItems.reduce((total, item) => total + (Number(item.quantity || 0) * Number(item.unit_price || 0)), 0);
 
   return {
     id: payment.id,
@@ -166,9 +177,9 @@ function normalizePayment(payment) {
       payment.payer?.phone?.number ||
       payment.additional_info?.payer?.phone?.number ||
       "",
-    productName: metadata.product_name || item.title || "Leque Flacalcinha",
-    quantity: Number(metadata.quantity || item.quantity || 1),
-    subtotal: Number(metadata.subtotal || payment.transaction_details?.total_paid_amount || payment.transaction_amount || 0),
+    productName: metadata.product_summary || metadata.product_name || derivedSummary || firstItem.title || "Leque Flacalcinha",
+    quantity: Number(metadata.quantity || derivedQuantity || firstItem.quantity || 1),
+    subtotal: Number(metadata.subtotal || derivedSubtotal || payment.transaction_details?.total_paid_amount || payment.transaction_amount || 0),
     shippingCost: Number(metadata.shipping_cost || 0),
     shippingLabel: metadata.shipping_label || (Number(metadata.shipping_cost || 0) > 0 ? "Frete Jadlog" : "Retirada com a vendedora"),
     shippingMode: metadata.shipping_mode || "delivery",
@@ -204,7 +215,7 @@ function buildAdminEmail(order) {
               <p style="margin:0 0 8px;"><strong>Pedido:</strong> ${escapeHtml(order.externalReference)}</p>
               <p style="margin:0 0 8px;"><strong>Pagamento:</strong> ${escapeHtml(order.paymentMethod)}</p>
               <p style="margin:0 0 8px;"><strong>ID do pagamento:</strong> ${escapeHtml(order.id)}</p>
-              <p style="margin:0 0 8px;"><strong>Produto:</strong> ${escapeHtml(order.productName)}</p>
+              <p style="margin:0 0 8px;"><strong>Leques:</strong> ${escapeHtml(order.productName)}</p>
               <p style="margin:0 0 8px;"><strong>Quantidade:</strong> ${escapeHtml(order.quantity)}</p>
               <p style="margin:0 0 8px;"><strong>Subtotal:</strong> ${formatMoney(order.subtotal)}</p>
               <p style="margin:0 0 8px;"><strong>Frete:</strong> ${escapeHtml(order.shippingMode === "pickup" ? order.shippingLabel : `${order.shippingLabel} (${formatMoney(order.shippingCost)})`)}</p>
@@ -245,7 +256,7 @@ function buildCustomerEmail(order) {
             </p>
             <div style="background:#101010; border:1px solid #2b2b2b; border-radius:14px; padding:18px; margin-bottom:16px;">
               <p style="margin:0 0 8px;"><strong>Pedido:</strong> ${escapeHtml(order.externalReference)}</p>
-              <p style="margin:0 0 8px;"><strong>Produto:</strong> ${escapeHtml(order.productName)}</p>
+              <p style="margin:0 0 8px;"><strong>Leques:</strong> ${escapeHtml(order.productName)}</p>
               <p style="margin:0 0 8px;"><strong>Quantidade:</strong> ${escapeHtml(order.quantity)}</p>
               <p style="margin:0 0 8px;"><strong>Forma de pagamento:</strong> ${escapeHtml(order.paymentMethod)}</p>
               <p style="margin:0;"><strong>Total pago:</strong> ${formatMoney(order.total)}</p>

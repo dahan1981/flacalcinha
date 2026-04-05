@@ -58,6 +58,8 @@ function validatePayload(payload) {
   const privacy = payload?.privacy || {};
   const deliveryMode = sanitizeString(order.deliveryMode || "delivery");
   const shippingCost = Number(order.shippingCost || 0);
+  const items = Array.isArray(order.items) ? order.items : [];
+  const validItems = items.filter(item => sanitizeString(item?.productName) && Number(item?.quantity || 0) > 0);
 
   if (!customer.name || !customer.email || !customer.phone) {
     return "Preencha nome, e-mail e numero antes de gerar o checkout.";
@@ -67,7 +69,7 @@ function validatePayload(payload) {
     return "Preencha CEP, rua, numero, bairro, cidade e estado antes de gerar o checkout.";
   }
 
-  if (!order.productName || !order.quantity || !order.unitPrice) {
+  if (!validItems.length || !Number(order.quantity || 0)) {
     return "Nao foi possivel montar o pedido.";
   }
 
@@ -94,14 +96,33 @@ function buildPreference(body, req) {
   const customer = body.customer;
   const address = body.address;
   const order = body.order;
-  const quantity = Number(order.quantity);
-  const unitPrice = Number(order.unitPrice);
-  const subtotal = Number(order.subtotal || quantity * unitPrice);
+  const orderItems = Array.isArray(order.items) ? order.items : [];
+  const normalizedItems = orderItems
+    .map(item => {
+      const title = sanitizeString(item.productName);
+      const quantity = Math.max(0, Number(item.quantity || 0));
+      const unitPrice = Number(item.unitPrice || 0);
+
+      if (!title || !quantity || Number.isNaN(unitPrice) || unitPrice <= 0) {
+        return null;
+      }
+
+      return {
+        productName: title,
+        quantity,
+        unitPrice,
+        subtotal: Number(item.subtotal || quantity * unitPrice)
+      };
+    })
+    .filter(Boolean);
+  const quantity = normalizedItems.reduce((total, item) => total + item.quantity, 0);
+  const subtotal = Number(order.subtotal || normalizedItems.reduce((total, item) => total + item.subtotal, 0));
   const shippingCost = Math.max(0, Number(order.shippingCost || 0));
   const total = Number(order.total || subtotal + shippingCost);
   const deliveryMode = sanitizeString(order.deliveryMode || "delivery") === "pickup" ? "pickup" : "delivery";
   const shippingService = sanitizeString(order.shippingService || (deliveryMode === "pickup" ? "retirada" : "jadlog"));
   const shippingLabel = sanitizeString(order.shippingLabel || "");
+  const productSummary = sanitizeString(order.productSummary || normalizedItems.map(item => `${item.productName} x${item.quantity}`).join(", "));
   const preferredPaymentMethod = body.preferredPaymentMethod === "card" ? "card" : "pix";
   const externalReference = buildExternalReference();
   const baseUrl = getBaseUrl(req);
@@ -124,16 +145,14 @@ function buildPreference(body, req) {
           installments: 12
         };
 
-  const items = [
-    {
-      id: sanitizeString(order.productName).toLowerCase().replaceAll(/\s+/g, "-"),
-      title: sanitizeString(order.productName),
+  const items = normalizedItems.map(item => ({
+      id: sanitizeString(item.productName).toLowerCase().replaceAll(/\s+/g, "-"),
+      title: sanitizeString(item.productName),
       description: "Leque oficial da Flacalcinha",
-      quantity,
+      quantity: item.quantity,
       currency_id: "BRL",
-      unit_price: unitPrice
-    }
-  ];
+      unit_price: item.unitPrice
+    }));
 
   if (deliveryMode === "delivery" && shippingCost > 0) {
     items.push({
@@ -176,7 +195,8 @@ function buildPreference(body, req) {
         customer_name: sanitizeString(customer.name),
         customer_email: sanitizeString(customer.email),
         customer_phone: sanitizeString(customer.phone),
-        product_name: sanitizeString(order.productName),
+        product_name: productSummary,
+        product_summary: productSummary,
         quantity: String(quantity),
         subtotal: String(subtotal),
         total: String(total),
@@ -188,7 +208,11 @@ function buildPreference(body, req) {
         shipping_mode: deliveryMode,
         shipping_service: shippingService,
         shipping_deadline_days: sanitizeString(order.deliveryDeadlineDays || ""),
-        preferred_payment_method: preferredPaymentMethod
+        preferred_payment_method: preferredPaymentMethod,
+        order_items: JSON.stringify(normalizedItems.map(item => ({
+          productName: item.productName,
+          quantity: item.quantity
+        })))
       }
     },
     externalReference

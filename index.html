@@ -455,6 +455,32 @@
       color: rgba(250,250,250,.5);
       margin-top: .55rem;
     }
+    .product-quantity-wrap {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .product-quantity-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: .7rem;
+      font-size: .76rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(250,250,250,.68);
+    }
+    .product-quantity-value {
+      color: rgba(255,255,255,.92);
+      font-size: .84rem;
+      letter-spacing: normal;
+    }
+    .product-quantity-control {
+      max-width: none;
+      width: 100%;
+    }
 
     .btn-form {
       width: 100%;
@@ -1053,36 +1079,52 @@
           <section class="step-card" id="stepProduct">
             <div class="step-label">1</div>
             <h3>Escolha seu leque</h3>
-            <p class="step-desc">Selecione o modelo e a quantidade desejada. Você pode pedir de 1 até 50 unidades.</p>
+            <p class="step-desc">Escolha a quantidade de cada modelo. Você pode combinar os dois leques no mesmo pedido, com até 50 unidades no total.</p>
 
             <div class="product-grid">
-              <button type="button" class="product-card active" data-product="Leque Flacalcinha">
+              <div class="product-card active" data-product="Leque Flacalcinha">
                 <img class="product-image" src="leques/lequeflacalcinha.jpeg" alt="Leque Flacalcinha" />
                 <div class="product-title-row">
                   <span class="product-name">Leque Flacalcinha</span>
                   <span class="product-price">R$ 45,00</span>
                 </div>
                 <p class="product-copy">Versão principal da marca, com foco total na identidade do projeto.</p>
-              </button>
+                <div class="product-quantity-wrap">
+                  <div class="product-quantity-label">
+                    <span>Quantidade</span>
+                    <span class="product-quantity-value" data-quantity-value="Leque Flacalcinha">1 unidade</span>
+                  </div>
+                  <div class="quantity-control product-quantity-control">
+                    <button type="button" class="quantity-btn product-quantity-btn" data-product="Leque Flacalcinha" data-action="decrease" aria-label="Diminuir quantidade do Leque Flacalcinha">-</button>
+                    <input class="quantity-input product-quantity-input" type="number" data-product="Leque Flacalcinha" min="0" max="50" step="1" value="1" inputmode="numeric" aria-label="Quantidade do Leque Flacalcinha" />
+                    <button type="button" class="quantity-btn product-quantity-btn" data-product="Leque Flacalcinha" data-action="increase" aria-label="Aumentar quantidade do Leque Flacalcinha">+</button>
+                  </div>
+                </div>
+              </div>
 
-              <button type="button" class="product-card" data-product="Leque Flamengo">
+              <div class="product-card" data-product="Leque Flamengo">
                 <img class="product-image" src="leques/lequeflamengo.jpeg" alt="Leque Flamengo" />
                 <div class="product-title-row">
                   <span class="product-name">Leque Flamengo</span>
                   <span class="product-price">R$ 45,00</span>
                 </div>
                 <p class="product-copy">Opção Flamengo para quem quer uma variação do leque com o mesmo valor unitário.</p>
-              </button>
+                <div class="product-quantity-wrap">
+                  <div class="product-quantity-label">
+                    <span>Quantidade</span>
+                    <span class="product-quantity-value" data-quantity-value="Leque Flamengo">0 unidades</span>
+                  </div>
+                  <div class="quantity-control product-quantity-control">
+                    <button type="button" class="quantity-btn product-quantity-btn" data-product="Leque Flamengo" data-action="decrease" aria-label="Diminuir quantidade do Leque Flamengo">-</button>
+                    <input class="quantity-input product-quantity-input" type="number" data-product="Leque Flamengo" min="0" max="50" step="1" value="0" inputmode="numeric" aria-label="Quantidade do Leque Flamengo" />
+                    <button type="button" class="quantity-btn product-quantity-btn" data-product="Leque Flamengo" data-action="increase" aria-label="Aumentar quantidade do Leque Flamengo">+</button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div class="form-group">
-              <label for="quantity">Quantidade</label>
-              <div class="quantity-control">
-                <button type="button" class="quantity-btn" id="decreaseQuantity" aria-label="Diminuir quantidade">-</button>
-                <input class="quantity-input" type="number" id="quantity" min="1" max="50" step="1" value="1" inputmode="numeric" aria-label="Quantidade" />
-                <button type="button" class="quantity-btn" id="increaseQuantity" aria-label="Aumentar quantidade">+</button>
-              </div>
-              <p class="quantity-hint">Escolha de 1 a 50 unidades.</p>
+              <p class="quantity-hint">Você pode misturar os dois modelos no mesmo pedido. O limite é de 50 unidades somadas.</p>
             </div>
 
             <button type="button" class="btn-main" id="continueToAddress">
@@ -1234,8 +1276,8 @@
 
           <div class="summary-list">
             <div class="summary-row">
-              <span>Leque escolhido</span>
-              <strong id="summaryProduct">Leque Flacalcinha</strong>
+              <span>Leques escolhidos</span>
+              <strong id="summaryProduct">Leque Flacalcinha x1</strong>
             </div>
             <div class="summary-row">
               <span>Quantidade</span>
@@ -1356,12 +1398,12 @@
   <script>
     const unitPrice = 45;
     const checkoutStorageKey = 'flacalcinha-checkout';
-    const productButtons = document.querySelectorAll('.product-card');
+    const productCards = document.querySelectorAll('.product-card');
+    const productQuantityInputs = document.querySelectorAll('.product-quantity-input');
+    const productQuantityButtons = document.querySelectorAll('.product-quantity-btn');
+    const productQuantityValues = document.querySelectorAll('[data-quantity-value]');
     const paymentButtons = document.querySelectorAll('.payment-option[data-payment]');
     const shippingButtons = document.querySelectorAll('.shipping-option');
-    const quantitySelect = document.getElementById('quantity');
-    const decreaseQuantity = document.getElementById('decreaseQuantity');
-    const increaseQuantity = document.getElementById('increaseQuantity');
     const openCheckoutButton = document.getElementById('openModal');
     const openLeadButton = document.getElementById('openModalSub');
     const modalOverlay = document.getElementById('modalOverlay');
@@ -1379,6 +1421,7 @@
     const continueToPayment = document.getElementById('continueToPayment');
     const startCheckoutButton = document.getElementById('startCheckout');
     const checkoutSection = document.getElementById('checkout');
+    const stepProduct = document.getElementById('stepProduct');
     const stepAddress = document.getElementById('stepAddress');
     const stepPayment = document.getElementById('stepPayment');
     const pickupOption = document.getElementById('pickupOption');
@@ -1407,7 +1450,14 @@
     const checkoutFeedback = document.getElementById('checkoutFeedback');
     const paymentStatusBanner = document.getElementById('paymentStatusBanner');
 
-    let selectedProduct = 'Leque Flacalcinha';
+    const productCatalog = [
+      'Leque Flacalcinha',
+      'Leque Flamengo'
+    ];
+    let cartState = {
+      'Leque Flacalcinha': 1,
+      'Leque Flamengo': 0
+    };
     let selectedPayment = 'pix';
     let selectedShippingMode = 'delivery';
     let shippingQuoteTimer = 0;
@@ -1444,16 +1494,86 @@
 
     const getDigits = value => String(value || '').replace(/\D/g, '');
 
-    function getQuantity() {
-      let quantity = Number(quantitySelect.value);
-      if (Number.isNaN(quantity) || quantity < 1) quantity = 1;
+    function getQuantityExcluding(productName) {
+      return productCatalog.reduce((total, product) => {
+        if (product === productName) return total;
+        return total + Number(cartState[product] || 0);
+      }, 0);
+    }
+
+    function sanitizeProductQuantity(productName, nextQuantity) {
+      let quantity = Number(nextQuantity);
+      if (Number.isNaN(quantity) || quantity < 0) quantity = 0;
       if (quantity > 50) quantity = 50;
-      quantitySelect.value = String(quantity);
+      const maxForProduct = Math.max(0, 50 - getQuantityExcluding(productName));
+      return Math.min(quantity, maxForProduct);
+    }
+
+    function getProductQuantity(productName) {
+      const quantity = sanitizeProductQuantity(productName, cartState[productName] || 0);
+      cartState[productName] = quantity;
       return quantity;
     }
 
+    function getCartItems() {
+      return productCatalog
+        .map(productName => {
+          const quantity = getProductQuantity(productName);
+          return {
+            productName,
+            quantity,
+            unitPrice,
+            subtotal: quantity * unitPrice
+          };
+        })
+        .filter(item => item.quantity > 0);
+    }
+
+    function getTotalQuantity() {
+      return getCartItems().reduce((total, item) => total + item.quantity, 0);
+    }
+
+    function getProductSummary() {
+      const items = getCartItems();
+      if (!items.length) {
+        return 'Nenhum leque selecionado';
+      }
+
+      return items.map(item => `${item.productName} x${item.quantity}`).join(', ');
+    }
+
     function getSubtotal() {
-      return getQuantity() * unitPrice;
+      return getCartItems().reduce((total, item) => total + item.subtotal, 0);
+    }
+
+    function syncProductCard(productName) {
+      const quantity = getProductQuantity(productName);
+      const card = document.querySelector(`.product-card[data-product="${productName}"]`);
+      const input = document.querySelector(`.product-quantity-input[data-product="${productName}"]`);
+      const label = document.querySelector(`[data-quantity-value="${productName}"]`);
+
+      if (card) {
+        card.classList.toggle('active', quantity > 0);
+      }
+
+      if (input) {
+        input.value = String(quantity);
+      }
+
+      if (label) {
+        label.textContent = `${quantity} ${quantity === 1 ? 'unidade' : 'unidades'}`;
+      }
+    }
+
+    function syncProductControls() {
+      productCatalog.forEach(syncProductCard);
+    }
+
+    function setProductQuantity(productName, nextQuantity) {
+      const quantity = sanitizeProductQuantity(productName, nextQuantity);
+      cartState[productName] = quantity;
+      syncProductControls();
+      return quantity;
     }
 
     function isPickupEligible() {
@@ -1525,7 +1645,8 @@
     }
 
     function buildCheckoutPayload() {
-      const quantity = getQuantity();
+      const items = getCartItems();
+      const quantity = getTotalQuantity();
       const subtotal = getSubtotal();
       const shippingCost = getShippingCost();
       const total = subtotal + shippingCost;
@@ -1547,9 +1668,9 @@
           notes: shippingNotes.value.trim()
         },
         order: {
-          productName: selectedProduct,
+          items,
+          productSummary: getProductSummary(),
           quantity,
-          unitPrice,
           subtotal,
           shippingCost,
           shippingLabel: getShippingLabel(),
@@ -1569,6 +1690,10 @@
     }
 
     function validateCheckoutPayload(payload) {
+      if (!payload.order.items.length || payload.order.quantity < 1) {
+        return 'Escolha pelo menos um leque antes de continuar.';
+      }
+
       if (!payload.customer.name || !payload.customer.email || !payload.customer.phone) {
         return 'Preencha nome, e-mail e número antes de ir para o pagamento.';
       }
@@ -1664,7 +1789,7 @@
 
     async function fetchShippingQuote() {
       const destinationZip = getDigits(buyerCep.value);
-      const quantity = getQuantity();
+      const quantity = getTotalQuantity();
 
       if (selectedShippingMode === 'pickup') {
         shippingState = {
@@ -1680,7 +1805,7 @@
         return;
       }
 
-      if (destinationZip.length !== 8) {
+      if (destinationZip.length !== 8 || quantity < 1) {
         shippingState = {
           ...shippingState,
           status: 'idle',
@@ -1780,12 +1905,12 @@
     }
 
     function updateSummary() {
-      const quantity = getQuantity();
+      const quantity = getTotalQuantity();
       const subtotal = getSubtotal();
       const shippingCost = selectedShippingMode === 'pickup' ? 0 : Number(shippingState.cost || 0);
       const total = subtotal + shippingCost;
 
-      summaryProduct.textContent = selectedProduct;
+      summaryProduct.textContent = getProductSummary();
       summaryQuantity.textContent = String(quantity);
       summarySubtotal.textContent = formatCurrency(subtotal);
       summaryTotal.textContent = formatCurrency(total);
@@ -1845,10 +1970,9 @@
 
     function saveCheckoutState() {
       const state = {
-        selectedProduct,
+        cartState,
         selectedPayment,
-        selectedShippingMode,
-        quantity: getQuantity()
+        selectedShippingMode
       };
 
       sessionStorage.setItem(checkoutStorageKey, JSON.stringify(state));
@@ -1860,11 +1984,14 @@
 
       try {
         const state = JSON.parse(raw);
-        if (state.selectedProduct) {
-          selectedProduct = state.selectedProduct;
-          productButtons.forEach(button => {
-            button.classList.toggle('active', button.dataset.product === selectedProduct);
+        if (state.cartState && typeof state.cartState === 'object') {
+          productCatalog.forEach(productName => {
+            cartState[productName] = sanitizeProductQuantity(productName, state.cartState[productName] || 0);
           });
+          if (getTotalQuantity() < 1) {
+            cartState['Leque Flacalcinha'] = 1;
+          }
+          syncProductControls();
         }
 
         if (state.selectedPayment) {
@@ -1876,10 +2003,6 @@
 
         if (state.selectedShippingMode) {
           selectedShippingMode = state.selectedShippingMode;
-        }
-
-        if (state.quantity) {
-          quantitySelect.value = String(Math.max(1, Math.min(50, Number(state.quantity))));
         }
       } catch (error) {
         sessionStorage.removeItem(checkoutStorageKey);
@@ -1906,12 +2029,29 @@
       }
     }
 
-    productButtons.forEach(button => {
+    productQuantityButtons.forEach(button => {
       button.addEventListener('click', () => {
-        productButtons.forEach(item => item.classList.remove('active'));
-        button.classList.add('active');
-        selectedProduct = button.dataset.product;
+        const productName = button.dataset.product;
+        const direction = button.dataset.action === 'increase' ? 1 : -1;
+        setProductQuantity(productName, getProductQuantity(productName) + direction);
         updateSummary();
+        queueShippingQuote();
+        saveCheckoutState();
+      });
+    });
+
+    productQuantityInputs.forEach(input => {
+      input.addEventListener('input', () => {
+        setProductQuantity(input.dataset.product, input.value);
+        updateSummary();
+        queueShippingQuote();
+        saveCheckoutState();
+      });
+
+      input.addEventListener('change', () => {
+        setProductQuantity(input.dataset.product, input.value);
+        updateSummary();
+        queueShippingQuote();
         saveCheckoutState();
       });
     });
@@ -1972,8 +2112,28 @@
       }
     });
 
-    continueToAddress.addEventListener('click', openAddressStep);
-    continueToAddressMobile.addEventListener('click', openAddressStep);
+    continueToAddress.addEventListener('click', () => {
+      const payload = buildCheckoutPayload();
+      if (!payload.order.items.length) {
+        setCheckoutFeedback('Escolha pelo menos um leque antes de continuar.', 'error');
+        scrollToSection(stepProduct);
+        return;
+      }
+
+      setCheckoutFeedback('', '');
+      openAddressStep();
+    });
+    continueToAddressMobile.addEventListener('click', () => {
+      const payload = buildCheckoutPayload();
+      if (!payload.order.items.length) {
+        setCheckoutFeedback('Escolha pelo menos um leque antes de continuar.', 'error');
+        scrollToSection(stepProduct);
+        return;
+      }
+
+      setCheckoutFeedback('', '');
+      openAddressStep();
+    });
     continueToPayment.addEventListener('click', () => {
       const payload = buildCheckoutPayload();
       const validationError = validateCheckoutPayload(payload);
@@ -1986,20 +2146,6 @@
 
       setCheckoutFeedback('', '');
       openPaymentStep();
-    });
-
-    decreaseQuantity.addEventListener('click', () => {
-      quantitySelect.value = String(Math.max(1, getQuantity() - 1));
-      updateSummary();
-      queueShippingQuote();
-      saveCheckoutState();
-    });
-
-    increaseQuantity.addEventListener('click', () => {
-      quantitySelect.value = String(Math.min(50, getQuantity() + 1));
-      updateSummary();
-      queueShippingQuote();
-      saveCheckoutState();
     });
 
     [
@@ -2021,7 +2167,7 @@
       });
     });
 
-    [quantitySelect, buyerCity, buyerState].forEach(field => {
+    [buyerCity, buyerState].forEach(field => {
       field.addEventListener('input', () => {
         updateSummary();
         queueShippingQuote();
@@ -2152,6 +2298,7 @@
       }
     });
 
+    syncProductControls();
     restoreCheckoutState();
     updateShippingEligibility();
     updateSummary();
