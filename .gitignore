@@ -1,0 +1,6 @@
+exports/
+.env
+.env.*
+!.env.example
+*.log
+Thumbs.db
