@@ -1577,9 +1577,7 @@
     }
 
     function isPickupEligible() {
-      const city = normalizeText(buyerCity.value);
-      const state = buyerState.value.trim().toUpperCase();
-      return state === 'RJ' && pickupCities.some(item => city.startsWith(item));
+      return true;
     }
 
     function getShippingCost() {
@@ -1590,7 +1588,7 @@
 
     function getShippingLabel() {
       if (selectedShippingMode === 'pickup') {
-        return `Retirada com a vendedora em ${buyerCity.value.trim() || 'cidade liberada'}`;
+        return 'Retirada com a vendedora';
       }
 
       if (shippingState.status === 'ready') {
@@ -1702,10 +1700,6 @@
         return 'Preencha CEP, rua, número, bairro, cidade e estado antes de gerar o checkout.';
       }
 
-      if (payload.order.deliveryMode === 'pickup' && !shippingState.eligiblePickup) {
-        return 'A retirada só fica disponível para Cachoeiras, Itaboraí, Nova Friburgo, Tanguá e Rio Bonito (RJ).';
-      }
-
       if (payload.order.deliveryMode === 'delivery' && shippingState.status !== 'ready') {
         return shippingState.status === 'loading'
           ? 'Aguarde o cálculo do frete pela Jadlog antes de continuar.'
@@ -1768,23 +1762,13 @@
     function updateShippingEligibility() {
       const eligiblePickup = isPickupEligible();
       shippingState.eligiblePickup = eligiblePickup;
-      pickupOption.disabled = !eligiblePickup;
-
-      if (selectedShippingMode === 'pickup' && !eligiblePickup) {
-        selectedShippingMode = 'delivery';
-      }
+      pickupOption.disabled = false;
 
       shippingButtons.forEach(button => {
         button.classList.toggle('active', button.dataset.shipping === selectedShippingMode);
       });
 
-      if (eligiblePickup) {
-        shippingModeHint.textContent = 'Seu endereço está em uma das cidades liberadas. Se quiser, você pode retirar com a vendedora e o frete zera.';
-      } else if (getDigits(buyerCep.value).length < 8 && !buyerCity.value.trim()) {
-        shippingModeHint.textContent = 'Digite o CEP para tentar preencher o endereço automaticamente e liberar a retirada quando a cidade for elegível.';
-      } else {
-        shippingModeHint.textContent = 'A retirada é liberada para Cachoeiras, Itaboraí, Nova Friburgo, Tanguá e Rio Bonito (RJ).';
-      }
+      shippingModeHint.textContent = 'A retirada com a vendedora pode ser escolhida aqui, mas ela só está disponível em Cachoeiras, Itaboraí, Nova Friburgo, Tanguá e Rio Bonito (RJ).';
     }
 
     async function fetchShippingQuote() {
@@ -1880,7 +1864,7 @@
       clearTimeout(shippingQuoteTimer);
       updateShippingEligibility();
 
-      if (selectedShippingMode === 'pickup' && shippingState.eligiblePickup) {
+      if (selectedShippingMode === 'pickup') {
         fetchShippingQuote();
         return;
       }
@@ -1915,9 +1899,9 @@
       summarySubtotal.textContent = formatCurrency(subtotal);
       summaryTotal.textContent = formatCurrency(total);
 
-      if (selectedShippingMode === 'pickup' && shippingState.eligiblePickup) {
+      if (selectedShippingMode === 'pickup') {
         summaryShipping.textContent = 'Retirada grátis';
-        shippingHelper.textContent = `Retirada liberada para ${buyerCity.value.trim() || 'sua cidade'}. O pedido segue com frete zero e você combina a entrega com a vendedora.`;
+        shippingHelper.textContent = 'Retirada com frete zero. Essa opção vale apenas para Cachoeiras, Itaboraí, Nova Friburgo, Tanguá e Rio Bonito (RJ), com combinação direta com a vendedora.';
         return;
       }
 
