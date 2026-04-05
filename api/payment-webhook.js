@@ -3,6 +3,7 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
 const MP_WEBHOOK_SECRET = process.env.MP_WEBHOOK_SECRET;
 const EMAIL_FROM = process.env.EMAIL_FROM || "Flacalcinha <onboarding@resend.dev>";
+const EMAIL_CC = process.env.EMAIL_CC || "";
 
 function setNoStore(res) {
   res.setHeader("Cache-Control", "no-store, max-age=0");
@@ -267,7 +268,7 @@ function buildCustomerEmail(order) {
   };
 }
 
-async function sendResendEmail({ to, subject, html, replyTo }) {
+async function sendResendEmail({ to, subject, html, replyTo, cc }) {
   if (!RESEND_API_KEY || !NOTIFICATION_EMAIL) {
     throw new Error("Email environment not configured");
   }
@@ -281,6 +282,7 @@ async function sendResendEmail({ to, subject, html, replyTo }) {
     body: JSON.stringify({
       from: EMAIL_FROM,
       to: Array.isArray(to) ? to : [to],
+      cc: cc ? (Array.isArray(cc) ? cc : [cc]) : undefined,
       subject,
       html,
       reply_to: replyTo
@@ -342,6 +344,7 @@ export default async function handler(req, res) {
     if (order.customerEmail) {
       await sendResendEmail({
         to: order.customerEmail,
+        cc: EMAIL_CC || undefined,
         subject: customerEmail.subject,
         html: customerEmail.html,
         replyTo: NOTIFICATION_EMAIL

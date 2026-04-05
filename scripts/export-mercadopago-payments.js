@@ -65,17 +65,14 @@ function toIsoDateEnd(value) {
 
 function buildSearchUrl({ from, to, status, limit, offset }) {
   const url = new URL(`${API_BASE_URL}/v1/payments/search`);
-  url.searchParams.set("sort", "date_created");
-  url.searchParams.set("criteria", "desc");
-  url.searchParams.set("range", "date_created");
   url.searchParams.set("limit", String(limit));
   url.searchParams.set("offset", String(offset));
 
-  if (from) {
+  if (from && to) {
+    url.searchParams.set("sort", "date_created");
+    url.searchParams.set("criteria", "desc");
+    url.searchParams.set("range", "date_created");
     url.searchParams.set("begin_date", toIsoDateStart(from));
-  }
-
-  if (to) {
     url.searchParams.set("end_date", toIsoDateEnd(to));
   }
 

@@ -1,6 +1,7 @@
 const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const EMAIL_FROM = process.env.EMAIL_FROM || "Flacalcinha <onboarding@resend.dev>";
+const EMAIL_CC = process.env.EMAIL_CC || "";
 
 function setNoStore(res) {
   res.setHeader("Cache-Control", "no-store, max-age=0");
@@ -113,6 +114,7 @@ async function sendCustomerConfirmation(payload) {
     body: JSON.stringify({
       from: EMAIL_FROM,
       to: [email],
+      cc: EMAIL_CC ? [EMAIL_CC] : undefined,
       subject: "Você entrou na fila de espera da Flacalcinha",
       html: `
         <div style="font-family: Arial, sans-serif; background:#0d0d0d; color:#fafafa; padding:32px;">
