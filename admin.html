@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel Admin | Flacalcinha</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --card: rgba(255,255,255,.06);
+      --card-strong: rgba(255,255,255,.09);
+      --line: rgba(255,255,255,.12);
+      --text: #fafafa;
+      --muted: rgba(250,250,250,.66);
+      --red: #cc0000;
+      --gold: #d4a843;
+      --success: #1d9f58;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      font-family: 'Manrope', sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(204,0,0,.2), transparent 35%),
+        linear-gradient(180deg, #151515 0%, #0d0d0d 100%);
+      color: var(--text);
+    }
+    .shell {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -.03em;
+    }
+    .brand span { color: var(--red); }
+    .muted { color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .card, .login-card, .table-card, .filters {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 18px 60px rgba(0,0,0,.24);
+    }
+    .card {
+      padding: 18px 20px;
+    }
+    .label {
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: .72rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .value {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+    }
+    .filters {
+      padding: 18px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr)) auto auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+    .field label {
+      display: block;
+      font-size: .8rem;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .field input, .field select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      padding: 12px 14px;
+      font: inherit;
+    }
+    .btn {
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--red), #e11313);
+      color: white;
+      padding: 13px 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 48px;
+    }
+    .btn.secondary {
+      background: rgba(255,255,255,.08);
+      border: 1px solid var(--line);
+      color: var(--text);
+    }
+    .table-card {
+      overflow: hidden;
+    }
+    .table-wrap {
+      overflow: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 940px;
+    }
+    thead th {
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      text-align: left;
+      padding: 14px 16px;
+      background: rgba(255,255,255,.04);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+    }
+    tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      vertical-align: top;
+      font-size: .92rem;
+    }
+    tbody tr:hover {
+      background: rgba(255,255,255,.03);
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(29,159,88,.14);
+      color: #8ef0b6;
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .login-shell {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .login-card {
+      width: min(460px, 100%);
+      padding: 28px;
+    }
+    .login-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.1rem;
+      margin: 0 0 10px;
+    }
+    .feedback {
+      min-height: 24px;
+      margin-top: 12px;
+      color: #ff9a9a;
+      font-size: .92rem;
+    }
+    .ok {
+      color: #8ef0b6;
+    }
+    .hidden { display: none !important; }
+    @media (max-width: 960px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      .grid, .filters { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <section class="login-shell" id="loginView">
+    <div class="login-card">
+      <div class="label">Acesso interno</div>
+      <h1 class="login-title">Painel Admin <span style="color:#cc0000;">Flacalcinha</span></h1>
+      <p class="muted">Entre com a senha do painel para ver pedidos, total vendido e saída de leques.</p>
+      <div class="field" style="margin-top:18px;">
+        <label for="adminPassword">Senha</label>
+        <input type="password" id="adminPassword" placeholder="Digite a senha do painel" autocomplete="current-password" />
+      </div>
+      <button class="btn" id="loginButton" style="width:100%; margin-top:16px;">Entrar no painel</button>
+      <div class="feedback" id="loginFeedback"></div>
+    </div>
+  </section>
+
+  <main class="shell hidden" id="dashboardView">
+    <div class="topbar">
+      <div>
+        <div class="label">Área protegida</div>
+        <div class="brand">Painel <span>Admin</span></div>
+      </div>
+      <button class="btn secondary" id="logoutButton">Sair</button>
+    </div>
+
+    <section class="grid">
+      <article class="card">
+        <div class="label">Pedidos aprovados</div>
+        <div class="value" id="summaryOrders">0</div>
+      </article>
+      <article class="card">
+        <div class="label">Leques vendidos</div>
+        <div class="value" id="summaryFans">0</div>
+      </article>
+      <article class="card">
+        <div class="label">Faturamento bruto</div>
+        <div class="value" id="summaryGross">R$ 0,00</div>
+      </article>
+      <article class="card">
+        <div class="label">Frete somado</div>
+        <div class="value" id="summaryShipping">R$ 0,00</div>
+      </article>
+    </section>
+
+    <section class="filters">
+      <div class="field">
+        <label for="filterFrom">De</label>
+        <input type="date" id="filterFrom" />
+      </div>
+      <div class="field">
+        <label for="filterTo">Até</label>
+        <input type="date" id="filterTo" />
+      </div>
+      <div class="field">
+        <label for="filterStatus">Status</label>
+        <select id="filterStatus">
+          <option value="approved">Aprovado</option>
+          <option value="pending">Pendente</option>
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="filterSearch">Busca</label>
+        <input type="text" id="filterSearch" placeholder="Nome, e-mail, pedido ou ID" />
+      </div>
+      <button class="btn" id="refreshButton">Atualizar</button>
+      <button class="btn secondary" id="clearFiltersButton">Limpar</button>
+    </section>
+
+    <div class="feedback" id="dashboardFeedback"></div>
+
+    <section class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Cliente</th>
+              <th>Leques</th>
+              <th>Qtd.</th>
+              <th>Total</th>
+              <th>Frete</th>
+              <th>Pagamento</th>
+              <th>Pedido</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const storageKey = 'flacalcinha-admin-password';
+    const loginView = document.getElementById('loginView');
+    const dashboardView = document.getElementById('dashboardView');
+    const adminPassword = document.getElementById('adminPassword');
+    const loginButton = document.getElementById('loginButton');
+    const logoutButton = document.getElementById('logoutButton');
+    const loginFeedback = document.getElementById('loginFeedback');
+    const dashboardFeedback = document.getElementById('dashboardFeedback');
+    const filterFrom = document.getElementById('filterFrom');
+    const filterTo = document.getElementById('filterTo');
+    const filterStatus = document.getElementById('filterStatus');
+    const filterSearch = document.getElementById('filterSearch');
+    const refreshButton = document.getElementById('refreshButton');
+    const clearFiltersButton = document.getElementById('clearFiltersButton');
+    const ordersTableBody = document.getElementById('ordersTableBody');
+    const summaryOrders = document.getElementById('summaryOrders');
+    const summaryFans = document.getElementById('summaryFans');
+    const summaryGross = document.getElementById('summaryGross');
+    const summaryShipping = document.getElementById('summaryShipping');
+
+    let allOrders = [];
+
+    function formatMoney(value) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0));
+    }
+
+    function formatDate(value) {
+      if (!value) return '-';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '-';
+      return new Intl.DateTimeFormat('pt-BR', {
+        dateStyle: 'short',
+        timeStyle: 'short'
+      }).format(date);
+    }
+
+    function setLoginState(isLoggedIn) {
+      loginView.classList.toggle('hidden', isLoggedIn);
+      dashboardView.classList.toggle('hidden', !isLoggedIn);
+    }
+
+    function setLoginFeedback(message, ok) {
+      loginFeedback.textContent = message;
+      loginFeedback.className = `feedback${ok ? ' ok' : ''}`;
+    }
+
+    function setDashboardFeedback(message, ok) {
+      dashboardFeedback.textContent = message;
+      dashboardFeedback.className = `feedback${ok ? ' ok' : ''}`;
+    }
+
+    function getSavedPassword() {
+      return sessionStorage.getItem(storageKey) || '';
+    }
+
+    function savePassword(password) {
+      sessionStorage.setItem(storageKey, password);
+    }
+
+    function clearPassword() {
+      sessionStorage.removeItem(storageKey);
+    }
+
+    function renderSummary(orders) {
+      const summary = {
+        orders: orders.length,
+        fans: orders.reduce((sum, order) => sum + Number(order.quantity || 0), 0),
+        gross: orders.reduce((sum, order) => sum + Number(order.transaction_amount || order.total || 0), 0),
+        shipping: orders.reduce((sum, order) => sum + Number(order.shipping_cost || 0), 0)
+      };
+
+      summaryOrders.textContent = String(summary.orders);
+      summaryFans.textContent = String(summary.fans);
+      summaryGross.textContent = formatMoney(summary.gross);
+      summaryShipping.textContent = formatMoney(summary.shipping);
+    }
+
+    function renderOrders(orders) {
+      if (!orders.length) {
+        ordersTableBody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:rgba(250,250,250,.6);">Nenhum pedido encontrado.</td></tr>';
+        renderSummary([]);
+        return;
+      }
+
+      ordersTableBody.innerHTML = orders.map(order => `
+        <tr>
+          <td><span class="pill">${order.status || 'sem status'}</span></td>
+          <td>
+            <strong>${order.customer_name || 'Cliente'}</strong><br />
+            <span class="muted">${order.customer_email || '-'}</span>
+          </td>
+          <td>${order.product_name || '-'}</td>
+          <td>${order.quantity || 0}</td>
+          <td>${formatMoney(order.transaction_amount || order.total || 0)}</td>
+          <td>${formatMoney(order.shipping_cost || 0)}</td>
+          <td>${order.payment_method || '-'}</td>
+          <td>
+            <strong>${order.external_reference || '-'}</strong><br />
+            <span class="muted">ID ${order.id || '-'}</span>
+          </td>
+          <td>${formatDate(order.date_approved || order.date_created)}</td>
+        </tr>
+      `).join('');
+
+      renderSummary(orders);
+    }
+
+    function applyFilters() {
+      const query = filterSearch.value.trim().toLowerCase();
+      const status = filterStatus.value;
+
+      const filtered = allOrders.filter(order => {
+        const statusMatch = !status || String(order.status || '').toLowerCase() === status.toLowerCase();
+        const text = [
+          order.customer_name,
+          order.customer_email,
+          order.external_reference,
+          order.id,
+          order.product_name
+        ].join(' ').toLowerCase();
+        const queryMatch = !query || text.includes(query);
+        return statusMatch && queryMatch;
+      });
+
+      renderOrders(filtered);
+    }
+
+    async function loadOrders() {
+      const password = getSavedPassword();
+      if (!password) {
+        setLoginState(false);
+        return;
+      }
+
+      refreshButton.disabled = true;
+      refreshButton.textContent = 'Atualizando...';
+      setDashboardFeedback('Carregando pedidos do Mercado Pago...', true);
+
+      try {
+        const params = new URLSearchParams();
+        if (filterFrom.value) params.set('from', filterFrom.value);
+        if (filterTo.value) params.set('to', filterTo.value);
+        if (filterStatus.value) params.set('status', filterStatus.value);
+        params.set('limit', '150');
+
+        const response = await fetch(`/api/admin-orders?${params.toString()}`, {
+          headers: {
+            'x-admin-password': password
+          }
+        });
+
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || 'Falha ao carregar pedidos');
+        }
+
+        allOrders = Array.isArray(result.orders) ? result.orders : [];
+        applyFilters();
+        setDashboardFeedback(`Painel atualizado com ${allOrders.length} pedidos.`, true);
+        setLoginState(true);
+      } catch (error) {
+        allOrders = [];
+        renderOrders([]);
+        setDashboardFeedback(error.message || 'Nao foi possivel carregar o painel.', false);
+
+        if (String(error.message || '').toLowerCase().includes('unauthorized')) {
+          clearPassword();
+          setLoginState(false);
+          setLoginFeedback('Senha invalida. Tente novamente.', false);
+        }
+      } finally {
+        refreshButton.disabled = false;
+        refreshButton.textContent = 'Atualizar';
+      }
+    }
+
+    loginButton.addEventListener('click', async () => {
+      const password = adminPassword.value.trim();
+      if (!password) {
+        setLoginFeedback('Digite a senha do painel.', false);
+        return;
+      }
+
+      savePassword(password);
+      setLoginFeedback('Validando acesso...', true);
+      await loadOrders();
+    });
+
+    adminPassword.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        loginButton.click();
+      }
+    });
+
+    logoutButton.addEventListener('click', () => {
+      clearPassword();
+      allOrders = [];
+      adminPassword.value = '';
+      ordersTableBody.innerHTML = '';
+      setDashboardFeedback('', false);
+      setLoginState(false);
+    });
+
+    refreshButton.addEventListener('click', loadOrders);
+    clearFiltersButton.addEventListener('click', () => {
+      filterFrom.value = '';
+      filterTo.value = '';
+      filterStatus.value = 'approved';
+      filterSearch.value = '';
+      loadOrders();
+    });
+    filterSearch.addEventListener('input', applyFilters);
+    filterStatus.addEventListener('change', applyFilters);
+
+    if (getSavedPassword()) {
+      setLoginState(true);
+      loadOrders();
+    } else {
+      setLoginState(false);
+    }
+  </script>
+</body>
+</html>
