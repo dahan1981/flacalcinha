@@ -159,8 +159,9 @@ function normalizePayment(payment) {
           ? "Cartao de credito"
           : payment.payment_method_id || payment.payment_type_id || "Mercado Pago",
     customerName: metadata.customer_name || payment.payer?.first_name || "Cliente",
-    customerEmail: payment.payer?.email || "",
+    customerEmail: metadata.customer_email || payment.payer?.email || "",
     customerPhone:
+      metadata.customer_phone ||
       payment.payer?.phone?.number ||
       payment.additional_info?.payer?.phone?.number ||
       "",

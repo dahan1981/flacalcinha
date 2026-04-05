@@ -174,6 +174,8 @@ function buildPreference(body, req) {
       payment_methods: paymentMethods,
       metadata: {
         customer_name: sanitizeString(customer.name),
+        customer_email: sanitizeString(customer.email),
+        customer_phone: sanitizeString(customer.phone),
         product_name: sanitizeString(order.productName),
         quantity: String(quantity),
         subtotal: String(subtotal),
