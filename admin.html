@@ -130,7 +130,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1180px;
+      min-width: 1320px;
     }
     thead th {
       font-size: .78rem;
@@ -277,6 +277,7 @@
             <tr>
               <th>Status</th>
               <th>Cliente</th>
+              <th>Celular</th>
               <th>Leques</th>
               <th>Qtd.</th>
               <th>Total</th>
@@ -373,7 +374,7 @@
 
     function renderOrders(orders) {
       if (!orders.length) {
-        ordersTableBody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:rgba(250,250,250,.6);">Nenhum pedido encontrado.</td></tr>';
+        ordersTableBody.innerHTML = '<tr><td colspan="11" style="text-align:center; color:rgba(250,250,250,.6);">Nenhum pedido encontrado.</td></tr>';
         renderSummary([]);
         return;
       }
@@ -385,6 +386,7 @@
             <strong>${order.customer_name || 'Cliente'}</strong><br />
             <span class="muted">${order.customer_email || '-'}</span>
           </td>
+          <td>${order.customer_phone || '-'}</td>
           <td>${order.product_name || '-'}</td>
           <td>${order.quantity || 0}</td>
           <td>${formatMoney(order.transaction_amount || order.total || 0)}</td>
