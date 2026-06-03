@@ -92,6 +92,28 @@ function buildExternalReference() {
   return `FLC-${Date.now()}-${random}`;
 }
 
+function buildFullAddress(address) {
+  const streetLine = [sanitizeString(address.street), sanitizeString(address.number)]
+    .filter(Boolean)
+    .join(", ");
+  const districtLine = sanitizeString(address.district);
+  const cityStateLine = [sanitizeString(address.city), sanitizeString(address.state).toUpperCase()]
+    .filter(Boolean)
+    .join("/");
+  const cepLine = sanitizeString(address.cep);
+  const complementLine = sanitizeString(address.complement);
+  const notesLine = sanitizeString(address.notes);
+
+  return [
+    streetLine,
+    districtLine,
+    cityStateLine,
+    cepLine ? `CEP ${cepLine}` : "",
+    complementLine ? `Complemento: ${complementLine}` : "",
+    notesLine ? `Obs: ${notesLine}` : ""
+  ].filter(Boolean).join(" | ");
+}
+
 function buildPreference(body, req) {
   const customer = body.customer;
   const address = body.address;
@@ -123,6 +145,7 @@ function buildPreference(body, req) {
   const shippingService = sanitizeString(order.shippingService || (deliveryMode === "pickup" ? "retirada" : "jadlog"));
   const shippingLabel = sanitizeString(order.shippingLabel || "");
   const productSummary = sanitizeString(order.productSummary || normalizedItems.map(item => `${item.productName} x${item.quantity}`).join(", "));
+  const fullAddress = buildFullAddress(address);
   const preferredPaymentMethod = body.preferredPaymentMethod === "card" ? "card" : "pix";
   const externalReference = buildExternalReference();
   const baseUrl = getBaseUrl(req);
@@ -201,8 +224,14 @@ function buildPreference(body, req) {
         subtotal: String(subtotal),
         total: String(total),
         address_cep: sanitizeString(address.cep),
+        address_street: sanitizeString(address.street),
+        address_number: sanitizeString(address.number),
+        address_district: sanitizeString(address.district),
         address_city: sanitizeString(address.city),
         address_state: sanitizeString(address.state).toUpperCase(),
+        address_complement: sanitizeString(address.complement),
+        address_notes: sanitizeString(address.notes),
+        address_full: fullAddress,
         shipping_cost: String(shippingCost),
         shipping_label: shippingLabel,
         shipping_mode: deliveryMode,

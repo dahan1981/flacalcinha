@@ -83,12 +83,29 @@ function normalizePayment(payment) {
   const payer = payment.payer || {};
   const additionalPayer = payment.additional_info?.payer || {};
   const items = Array.isArray(payment.additional_info?.items) ? payment.additional_info.items : [];
+  const payerAddress = payer.address || payment.additional_info?.payer?.address || {};
   const productItems = items.filter(item => String(item?.id || "").toLowerCase() !== "frete-jadlog");
   const firstName = sanitize(payer.first_name);
   const lastName = sanitize(payer.last_name);
   const payerName = [firstName, lastName].filter(Boolean).join(" ");
   const productSummary = sanitize(metadata.product_summary || metadata.product_name) ||
     productItems.map(item => `${sanitize(item.title)} x${Number(item.quantity || 0)}`).filter(Boolean).join(", ");
+  const street = sanitize(metadata.address_street) || sanitize(payerAddress.street_name);
+  const number = sanitize(metadata.address_number) || sanitize(payerAddress.street_number);
+  const district = sanitize(metadata.address_district);
+  const city = sanitize(metadata.address_city);
+  const state = sanitize(metadata.address_state);
+  const cep = sanitize(metadata.address_cep) || sanitize(payerAddress.zip_code);
+  const complement = sanitize(metadata.address_complement);
+  const notes = sanitize(metadata.address_notes);
+  const fallbackAddress = [
+    [street, number].filter(Boolean).join(", "),
+    district,
+    [city, state].filter(Boolean).join("/"),
+    cep ? `CEP ${cep}` : "",
+    complement ? `Complemento: ${complement}` : "",
+    notes ? `Obs: ${notes}` : ""
+  ].filter(Boolean).join(" | ");
 
   return {
     id: payment.id || "",
@@ -115,9 +132,15 @@ function normalizePayment(payment) {
     shipping_mode: sanitize(metadata.shipping_mode),
     shipping_service: sanitize(metadata.shipping_service),
     shipping_label: sanitize(metadata.shipping_label),
-    address_cep: sanitize(metadata.address_cep),
-    address_city: sanitize(metadata.address_city),
-    address_state: sanitize(metadata.address_state)
+    address_cep: cep,
+    address_street: street,
+    address_number: number,
+    address_district: district,
+    address_city: city,
+    address_state: state,
+    address_complement: complement,
+    address_notes: notes,
+    address_full: sanitize(metadata.address_full) || fallbackAddress
   };
 }
 

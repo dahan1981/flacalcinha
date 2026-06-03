@@ -130,7 +130,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 940px;
+      min-width: 1180px;
     }
     thead th {
       font-size: .78rem;
@@ -282,6 +282,7 @@
               <th>Total</th>
               <th>Frete</th>
               <th>Pagamento</th>
+              <th>Endereço</th>
               <th>Pedido</th>
               <th>Data</th>
             </tr>
@@ -372,7 +373,7 @@
 
     function renderOrders(orders) {
       if (!orders.length) {
-        ordersTableBody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:rgba(250,250,250,.6);">Nenhum pedido encontrado.</td></tr>';
+        ordersTableBody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:rgba(250,250,250,.6);">Nenhum pedido encontrado.</td></tr>';
         renderSummary([]);
         return;
       }
@@ -389,6 +390,7 @@
           <td>${formatMoney(order.transaction_amount || order.total || 0)}</td>
           <td>${formatMoney(order.shipping_cost || 0)}</td>
           <td>${order.payment_method || '-'}</td>
+          <td>${order.address_full || '-'}</td>
           <td>
             <strong>${order.external_reference || '-'}</strong><br />
             <span class="muted">ID ${order.id || '-'}</span>
