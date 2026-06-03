@@ -3,6 +3,10 @@ import { timingSafeEqual } from "node:crypto";
 const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const API_BASE_URL = "https://api.mercadopago.com";
+const HIDDEN_ORDER_IDS = new Set([
+  "159443070204",
+  "155210615806"
+]);
 
 function setNoStore(res) {
   res.setHeader("Cache-Control", "no-store, max-age=0");
@@ -197,7 +201,11 @@ export default async function handler(req, res) {
         break;
       }
 
-      rows.push(...page.results.map(normalizePayment));
+      rows.push(
+        ...page.results
+          .map(normalizePayment)
+          .filter(row => !HIDDEN_ORDER_IDS.has(String(row.id)))
+      );
       offset += page.results.length;
 
       const total = Number(page.paging.total || 0);
