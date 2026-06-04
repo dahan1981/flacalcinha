@@ -82,6 +82,10 @@ function sanitize(value) {
   return String(value ?? "").trim();
 }
 
+function sanitizeCpf(value) {
+  return sanitize(value).replace(/\D+/g, "");
+}
+
 function normalizePayment(payment) {
   const metadata = payment.metadata || {};
   const payer = payment.payer || {};
@@ -128,6 +132,10 @@ function normalizePayment(payment) {
       sanitize(metadata.customer_phone) ||
       sanitize(payer.phone?.number) ||
       sanitize(additionalPayer.phone?.number),
+    customer_cpf:
+      sanitizeCpf(metadata.customer_cpf) ||
+      sanitizeCpf(payer.identification?.number) ||
+      sanitizeCpf(additionalPayer.identification?.number),
     product_name: productSummary || "Leque Flacalcinha",
     quantity: Number(metadata.quantity || productItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0) || 1),
     subtotal: Number(metadata.subtotal || 0),

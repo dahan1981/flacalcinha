@@ -43,6 +43,10 @@ function sanitizeString(value) {
   return String(value || "").trim();
 }
 
+function sanitizeCpf(value) {
+  return sanitizeString(value).replace(/\D+/g, "");
+}
+
 function splitName(fullName) {
   const parts = sanitizeString(fullName).split(/\s+/).filter(Boolean);
   return {
@@ -198,6 +202,14 @@ function buildPreference(body, req) {
         phone: {
           number: sanitizeString(customer.phone)
         },
+        ...(sanitizeCpf(customer.cpf)
+          ? {
+              identification: {
+                type: "CPF",
+                number: sanitizeCpf(customer.cpf)
+              }
+            }
+          : {}),
         address: {
           zip_code: sanitizeString(address.cep),
           street_name: sanitizeString(address.street),
@@ -218,6 +230,7 @@ function buildPreference(body, req) {
         customer_name: sanitizeString(customer.name),
         customer_email: sanitizeString(customer.email),
         customer_phone: sanitizeString(customer.phone),
+        customer_cpf: sanitizeCpf(customer.cpf),
         product_name: productSummary,
         product_summary: productSummary,
         quantity: String(quantity),

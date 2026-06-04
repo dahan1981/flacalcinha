@@ -1147,14 +1147,18 @@
                 <label for="buyerEmail">E-mail</label>
                 <input type="email" id="buyerEmail" placeholder="seu@email.com" autocomplete="email" />
               </div>
-              <div class="form-group">
-                <label for="buyerPhone">WhatsApp</label>
-                <input type="tel" id="buyerPhone" placeholder="(21) 99999-9999" autocomplete="tel" />
-              </div>
-              <div class="form-group">
-                <label for="buyerCep">CEP</label>
-                <input type="text" id="buyerCep" placeholder="00000-000" autocomplete="postal-code" />
-              </div>
+                <div class="form-group">
+                  <label for="buyerPhone">WhatsApp</label>
+                  <input type="tel" id="buyerPhone" placeholder="(21) 99999-9999" autocomplete="tel" />
+                </div>
+                <div class="form-group">
+                  <label for="buyerCpf">CPF</label>
+                  <input type="text" id="buyerCpf" placeholder="000.000.000-00" inputmode="numeric" autocomplete="off" />
+                </div>
+                <div class="form-group">
+                  <label for="buyerCep">CEP</label>
+                  <input type="text" id="buyerCep" placeholder="00000-000" autocomplete="postal-code" />
+                </div>
               <div class="form-group">
                 <label for="buyerStreet">Rua / Avenida</label>
                 <input type="text" id="buyerStreet" placeholder="Endereço" autocomplete="address-line1" />
@@ -1435,6 +1439,7 @@
     const buyerName = document.getElementById('buyerName');
     const buyerEmail = document.getElementById('buyerEmail');
     const buyerPhone = document.getElementById('buyerPhone');
+    const buyerCpf = document.getElementById('buyerCpf');
     const buyerCep = document.getElementById('buyerCep');
     const buyerStreet = document.getElementById('buyerStreet');
     const buyerNumber = document.getElementById('buyerNumber');
@@ -1653,7 +1658,8 @@
         customer: {
           name: buyerName.value.trim(),
           email: buyerEmail.value.trim(),
-          phone: buyerPhone.value.trim()
+          phone: buyerPhone.value.trim(),
+          cpf: buyerCpf.value.trim()
         },
         address: {
           cep: buyerCep.value.trim(),
@@ -2132,13 +2138,14 @@
       openPaymentStep();
     });
 
-    [
-      buyerName,
-      buyerEmail,
-      buyerPhone,
-      buyerStreet,
-      buyerNumber,
-      buyerDistrict,
+      [
+        buyerName,
+        buyerEmail,
+        buyerPhone,
+        buyerCpf,
+        buyerStreet,
+        buyerNumber,
+        buyerDistrict,
       buyerComplement,
       shippingNotes
     ].forEach(field => {
